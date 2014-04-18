@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src/main/java"/>
+	<classpathentry kind="src" output="bin/testclasses" path="src/test/java"/>
+	<classpathentry kind="src" path="src/main/resources"/>
+	<classpathentry kind="src" output="bin/testclasses" path="src/test/resources"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry exported="true" kind="lib" path="libs/Utils.jar" sourcepath="/Utils"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ZiNCAPI"/>
+	<classpathentry kind="src" path="/ZiNCServer"/>
+	<classpathentry kind="output" path="bin/classes"/>
+</classpath>
