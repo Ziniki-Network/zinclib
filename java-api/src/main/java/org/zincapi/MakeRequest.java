@@ -13,5 +13,5 @@ public interface MakeRequest {
 
 	void send() throws JSONException;
 
-
+	void unsubscribe() throws JSONException;
 }

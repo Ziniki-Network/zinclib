@@ -1,6 +1,8 @@
 package org.zincapi.server;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -9,17 +11,18 @@ import org.zincapi.OutgoingConnection;
 import org.zincapi.ResourceHandler;
 import org.zincapi.Response;
 import org.zincapi.Zinc;
+import org.zincapi.ZincInvalidSubscriptionException;
+import org.zincapi.ZincNoSubscriptionException;
 import org.zincapi.concrete.ConcreteHandleRequest;
 import org.zincapi.concrete.ConcreteResponse;
 
 public class IncomingServerConnection implements IncomingConnection {
-	private final Zinc zinc;
 	private final ZiNCServer server;
 	private final OutgoingConnection replyTo;
+	private final Map<Integer, Response> subscriptions = new HashMap<Integer, Response>();
 	boolean isEstablished = false;
 
 	public IncomingServerConnection(Zinc zinc, ZiNCServer server, OutgoingConnection oc) {
-		this.zinc = zinc;
 		this.server = server;
 		this.replyTo = oc;
 	}
@@ -34,6 +37,16 @@ public class IncomingServerConnection implements IncomingConnection {
 		}
 		JSONObject req = msg.getJSONObject("request");
 		String method = req.getString("method");
+		if (method.equals("unsubscribe")) {
+			if (!msg.has("subscription"))
+				throw new ZincNoSubscriptionException();
+			int sub = msg.getInt("subscription");
+			if (!subscriptions.containsKey(sub))
+				throw new ZincInvalidSubscriptionException(sub);
+			Response deadResponse = subscriptions.remove(sub);
+			deadResponse.unsubscribed();
+			return;
+		}
 		String resource = null;
 		if (req.has("resource"))
 			resource = req.getString("resource");
@@ -53,8 +66,11 @@ public class IncomingServerConnection implements IncomingConnection {
 		try {
 			// May need more than this if we have a "subscription"
 			Response response = null;
-			if (msg.has("subscription"))
-				response = new ConcreteResponse(replyTo, msg.getInt("subscription"));
+			if (msg.has("subscription")) {
+				int sub = msg.getInt("subscription");
+				response = new ConcreteResponse(replyTo, sub);
+				subscriptions.put(sub, response);
+			}
 			handler.handle(hr, response);
 		} catch (Exception ex) {
 			ex.printStackTrace();

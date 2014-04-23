@@ -77,6 +77,12 @@ define('zinc', ['rsvp', 'atmosphere', 'exports'], function(RSVP, atmosphere, exp
     this.conn.sendJson(this.msg);
   }
   
+  MakeRequest.prototype.unsubscribe = function() {
+    if (!this.msg.subscription)
+      throw "There is no subscription to unsubscribe"
+    this.conn.sendJson({subscription: this.msg.subscription, request: {method: "unsubscribe"}});
+  }
+  
   exports.newRequestor = function(uri) {
     return new RSVP.Promise(function(resolve, reject) {
       var atmo, conn;

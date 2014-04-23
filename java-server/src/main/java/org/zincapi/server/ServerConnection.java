@@ -3,6 +3,7 @@ package org.zincapi.server;
 import org.atmosphere.cpr.AtmosphereResponse;
 import org.codehaus.jettison.json.JSONObject;
 import org.zincapi.OutgoingConnection;
+import org.zincapi.ZincBrokenConnectionException;
 import org.zincapi.concrete.ConcreteConnection;
 
 public class ServerConnection extends ConcreteConnection implements OutgoingConnection {
@@ -22,8 +23,7 @@ public class ServerConnection extends ConcreteConnection implements OutgoingConn
 		try {
 			atmo.getAsyncIOWriter().write(atmo, msg);
 		} catch (Exception ex) {
-			// TODO: we should probably assume this is a dead connection and let people know
-			ex.printStackTrace();
+			throw new ZincBrokenConnectionException();
 		}
 	}
 

@@ -7,4 +7,5 @@ public interface Response {
 
 	void send(JSONObject jsonObject) throws JSONException;
 
+	void unsubscribed();
 }

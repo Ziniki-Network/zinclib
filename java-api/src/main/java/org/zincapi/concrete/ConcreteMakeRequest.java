@@ -10,6 +10,7 @@ import org.zincapi.Connection;
 import org.zincapi.MakeRequest;
 import org.zincapi.ResponseHandler;
 import org.zincapi.ZincCannotSetPayloadException;
+import org.zincapi.ZincNoSubscriptionException;
 
 public class ConcreteMakeRequest implements MakeRequest {
 	private final Connection conn;
@@ -58,6 +59,18 @@ public class ConcreteMakeRequest implements MakeRequest {
 	@Override
 	public void send() throws JSONException {
 		conn.send(asJSON());
+	}
+	
+	@Override
+	public void unsubscribe() throws JSONException {
+		if (subscriptionHandle == null)
+			throw new ZincNoSubscriptionException();
+		JSONObject req = new JSONObject();
+		req.put("method", "unsubscribe");
+		JSONObject usmsg = new JSONObject();
+		usmsg.put("subscription", subscriptionHandle);
+		usmsg.put("request", req);
+		conn.send(usmsg);
 	}
 
 	private JSONObject asJSON() throws JSONException {

@@ -13,10 +13,8 @@ import org.zincapi.Zinc;
 import org.zincapi.concrete.ConcreteRequestor;
 
 public class ZiNCClient implements Zinc.Client {
-	private final Zinc zinc;
 
 	public ZiNCClient(Zinc z) {
-		zinc = z;
 	}
 	
 	@SuppressWarnings("rawtypes")
