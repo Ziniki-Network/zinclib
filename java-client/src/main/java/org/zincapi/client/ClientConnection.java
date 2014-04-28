@@ -7,18 +7,20 @@ import org.atmosphere.wasync.Function;
 import org.atmosphere.wasync.Request;
 import org.atmosphere.wasync.Socket;
 import org.codehaus.jettison.json.JSONObject;
+import org.zincapi.Zinc;
 import org.zincapi.concrete.ConcreteConnection;
 
 public class ClientConnection extends ConcreteConnection {
 	private final Socket ws;
 
-	public ClientConnection(Socket ws, Request request) throws IOException {
+	public ClientConnection(Zinc zinc, Socket ws, Request request) throws IOException {
+		super(zinc);
 		this.ws = ws;
 		ws
 		.on(Event.MESSAGE, new Function<String>() {
 			@Override
 			public void on(String s) {
-				handleResponse(s);
+				handleMessage(s);
 			}
 		})
 		// Handle Errors

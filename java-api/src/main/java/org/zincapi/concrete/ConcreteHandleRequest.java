@@ -5,14 +5,17 @@ import java.util.TreeMap;
 
 import org.codehaus.jettison.json.JSONObject;
 import org.zincapi.HandleRequest;
+import org.zincapi.Requestor;
 
 public class ConcreteHandleRequest implements HandleRequest {
+	private final ConcreteConnection conn;
 	private final String method;
 	private String resource;
 	private final Map<String, Object> options = new TreeMap<String, Object>();
 	private JSONObject payload;
 
-	public ConcreteHandleRequest(String method) {
+	public ConcreteHandleRequest(ConcreteConnection conn, String method) {
+		this.conn = conn;
 		this.method = method;
 	}
 	
@@ -38,6 +41,16 @@ public class ConcreteHandleRequest implements HandleRequest {
 		return method.equals("create");
 	}
 	
+	@Override
+	public Requestor obtainRequestor() {
+		return conn.newRequestor();
+	}
+
+	@Override
+	public String getConnectionURI() {
+		return conn.getURI();
+	}
+
 	@Override
 	public JSONObject getPayload() {
 		return payload;

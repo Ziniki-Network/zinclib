@@ -3,10 +3,13 @@ package org.zincapi;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.URI;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.codehaus.jettison.json.JSONException;
+import org.zincapi.concrete.ConcreteHandleRequest;
 import org.zincapi.concrete.ConcreteMakeRequest;
 import org.zincapi.concrete.ConcreteMulticastResponse;
 
@@ -14,7 +17,12 @@ public class Zinc {
 	private final Client client; 
 	private final Server server; 
 	private final Map<String, Connection> conns = new TreeMap<String, Connection>();
+	private ResourceHandler defaultHandler;
+	private final Map<String, ResourceHandler> handlers = new TreeMap<String, ResourceHandler>();
 	private final Map<String, ConcreteMulticastResponse> multicasts = new TreeMap<String, ConcreteMulticastResponse>();
+	private final Set<ConnectionHandler> newConnectionListeners = new HashSet<ConnectionHandler>();
+	private String idType = "client";
+	private String idAddress;
 
 	public Zinc() {
 		{
@@ -39,6 +47,13 @@ public class Zinc {
 		}
 	}
 	
+	public void setIdentity(String type, String address) {
+		if (!type.equals("client") && !type.equals("server"))
+			throw new ZincException("Type " + type + " is not valid");
+		idType = type;
+		idAddress = address;
+	}
+	
 	public Requestor newRequestor(URI uri) throws IOException {
 		if (client == null)
 			throw new ZincNoClientException();
@@ -50,8 +65,8 @@ public class Zinc {
 			conn = client.createConnection(url);
 			conns.put(url, conn);
 			ConcreteMakeRequest mr = new ConcreteMakeRequest(conn, "establish");
-			mr.setOption("type", "client");
-			mr.setOption("address", null);
+			mr.setOption("type", idType);
+			mr.setOption("address", idAddress);
 			try {
 				mr.send();
 			} catch (JSONException ex) {
@@ -62,9 +77,10 @@ public class Zinc {
 	}
 	
 	public void handleResource(String resource, ResourceHandler handler) {
-		if (server == null)
-			throw new ZincNoServerException();
-		server.handleResource(resource, handler);
+		if (resource == null)
+			defaultHandler = handler;
+		// TODO: this should be broken up into a REST-like tree structure
+		handlers.put(resource, handler);
 	}
 
 	public MulticastResponse getMulticastResponse(String name) {
@@ -76,12 +92,42 @@ public class Zinc {
 		}
 	}
 
+	public void addConnectionHandler(ConnectionHandler handler) {
+		newConnectionListeners.add(handler);
+	}
+	
+	public Set<ConnectionHandler> getConnectionHandlers() {
+		return newConnectionListeners;
+	}
+
 	public IncomingConnection addConnection(OutgoingConnection c) {
 		if (server == null)
 			throw new ZincNoServerException();
 		return server.addConnection(c);
 	}
 	
+	public Client getClient() {
+		return client;
+	}
+	
+	public ResourceHandler getHandler(ConcreteHandleRequest hr, String resource) {
+		if (resource != null) { 
+			// TODO: This should really support REST-like endpoints
+			// with {id} style syntax and nesting
+			
+			// More urgent todo: this needs to support prefixes and hand the rest back to the request
+			if (handlers.containsKey(resource)) {
+				hr.setResource(""); // TODO: should be whatever is left over once the main body is matched
+				return handlers.get(resource);
+			}
+		}
+		if (defaultHandler != null) {
+			hr.setResource(resource);
+			return defaultHandler;
+		}
+		throw new ZincNoResourceHandlerException(resource);
+	}
+
 	public void close() {
 		for (Connection c : conns.values())
 			c.close();

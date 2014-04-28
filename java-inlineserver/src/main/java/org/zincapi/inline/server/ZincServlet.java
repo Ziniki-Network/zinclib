@@ -20,19 +20,28 @@ import com.gmmapowell.reflection.Reflection;
 public class ZincServlet extends HttpServlet {
     private final AtmosphereFramework framework;
 	private final Zinc zinc;
+	private Object global;
 
-    public ZincServlet() {
+	public ZincServlet() {
 		zinc = new Zinc();
 		framework = new AtmosphereFramework(false, false);
     }
 
+	public Zinc getZinc() {
+		return zinc;
+	}
+	
+	public Object getState() {
+		return global;
+	}
+	
     @Override
     public void init(ServletConfig config) throws ServletException {
     	super.init(config);
     	try {
     		String ip = config.getInitParameter("org.zincapi.server.init");
     		if (ip != null)
-    			Reflection.callStatic(ip, "initZinc", zinc);
+    			global = Reflection.callStatic(ip, "initZinc", zinc);
     	} catch (Exception ex) {
     		throw new ServletException(ex);
     	}

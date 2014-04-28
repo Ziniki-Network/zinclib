@@ -10,4 +10,8 @@ public interface HandleRequest {
 
 	JSONObject getPayload();
 
+	String getConnectionURI();
+
+	Requestor obtainRequestor();
+
 }

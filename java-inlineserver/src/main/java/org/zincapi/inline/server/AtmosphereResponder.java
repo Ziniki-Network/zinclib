@@ -39,7 +39,7 @@ public class AtmosphereResponder implements AtmosphereHandler {
 			// initiating the channel
 			resource.suspend();
 			synchronized (pending) {
-				pending.put(session, new ServerConnection(resource.getResponse()));
+				pending.put(session, new ServerConnection(zinc, resource.getResponse()));
 			}
 		}
 		else if (request.getMethod().equalsIgnoreCase("post"))

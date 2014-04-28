@@ -13,8 +13,10 @@ import org.zincapi.Zinc;
 import org.zincapi.concrete.ConcreteRequestor;
 
 public class ZiNCClient implements Zinc.Client {
+	private final Zinc zinc;
 
 	public ZiNCClient(Zinc z) {
+		this.zinc = z;
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -26,7 +28,7 @@ public class ZiNCClient implements Zinc.Client {
 				.transport(TRANSPORT.WEBSOCKET)
 				.transport(TRANSPORT.LONG_POLLING);
 
-		return new ClientConnection(client.create(), request.build());
+		return new ClientConnection(zinc, client.create(), request.build());
 	}
 
 	@Override

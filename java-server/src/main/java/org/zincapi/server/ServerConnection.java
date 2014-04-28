@@ -1,21 +1,15 @@
 package org.zincapi.server;
 
 import org.atmosphere.cpr.AtmosphereResponse;
-import org.codehaus.jettison.json.JSONObject;
 import org.zincapi.OutgoingConnection;
+import org.zincapi.Zinc;
 import org.zincapi.ZincBrokenConnectionException;
-import org.zincapi.concrete.ConcreteConnection;
 
-public class ServerConnection extends ConcreteConnection implements OutgoingConnection {
+public class ServerConnection implements OutgoingConnection {
 	private final AtmosphereResponse atmo;
 
-	public ServerConnection(AtmosphereResponse atmo) {
+	public ServerConnection(Zinc zinc, AtmosphereResponse atmo) {
 		this.atmo = atmo;
-	}
-
-	@Override
-	public void send(JSONObject jsonObject) {
-		sendTextMessage(jsonObject.toString());
 	}
 
 	@Override
@@ -27,7 +21,6 @@ public class ServerConnection extends ConcreteConnection implements OutgoingConn
 		}
 	}
 
-	@Override
 	public void close() {
 		// TODO Auto-generated method stub
 		
