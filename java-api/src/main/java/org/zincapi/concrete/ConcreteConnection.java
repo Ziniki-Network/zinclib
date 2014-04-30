@@ -7,6 +7,8 @@ import java.util.TreeMap;
 
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zincapi.Connection;
 import org.zincapi.MakeRequest;
 import org.zincapi.Requestor;
@@ -17,6 +19,7 @@ import org.zincapi.ZincInvalidSubscriptionException;
 import org.zincapi.ZincNoSubscriptionException;
 
 public abstract class ConcreteConnection implements Connection {
+	private final static Logger logger = LoggerFactory.getLogger("Connection");
 	protected final Zinc zinc;
 	private int handle;
 	private String remoteURI;
@@ -36,6 +39,7 @@ public abstract class ConcreteConnection implements Connection {
 	
 	protected void handleMessage(String s) {
 		try {
+			logger.info("Handling message " + s);
 			JSONObject json = new JSONObject(s);
 			handleMessage(json);
 		} catch (JSONException ex) {
