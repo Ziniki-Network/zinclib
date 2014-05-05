@@ -5,6 +5,8 @@ define('zinc', ['rsvp', 'atmosphere', 'exports'], function(RSVP, atmosphere, exp
     this.atmo = atmo;
     this.nextId = 0;
     this.dispatch = {};
+    var self = this;
+    setInterval(function(){self.atmo.push(JSON.stringify({"request":{"method":"heartbeat"}}))}, 30000);
   }
 
   Connection.prototype.nextHandler = function(handler) {

@@ -61,6 +61,11 @@ public abstract class ConcreteConnection implements Connection {
 					Response deadResponse = subscriptions.remove(sub);
 					deadResponse.unsubscribed();
 					return;
+				} else if (method.equals("heartbeat")) {
+					JSONObject hb = new JSONObject();
+					hb.put("heartbeat", "");
+					send(hb);
+					return;
 				}
 				String resource = null;
 				if (req.has("resource"))
