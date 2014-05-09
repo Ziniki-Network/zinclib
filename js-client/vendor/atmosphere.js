@@ -105,7 +105,7 @@ define('atmosphere', ['exports'], function(exports) {
                 async: true,
                 shared: false,
                 readResponsesHeaders: false,
-                maxReconnectOnClose: 5,
+                maxReconnectOnClose: 0,
                 enableProtocol: true,
                 pollingInterval : 0,
                 onError: function (response) {
@@ -1353,7 +1353,7 @@ define('atmosphere', ['exports'], function(exports) {
                                 _executeWebSocket(true);
                             }
                         } else {
-                            atmosphere.util.log(_request.logLevel, ["Websocket reconnect maximum try reached " + _request.requestCount]);
+                            atmosphere.util.log(_request.logLevel, ["Websocket reconnect maximum try reached " + _request.maxReconnectOnClose]);
                             if (_request.logLevel === 'warn') {
                                 atmosphere.util.warn("Websocket error, reason: " + message.reason);
                             }

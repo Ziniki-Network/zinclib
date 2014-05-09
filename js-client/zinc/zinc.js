@@ -1,12 +1,25 @@
 define('zinc', ['rsvp', 'atmosphere', 'exports'], function(RSVP, atmosphere, exports) {
   "use strict";
 
-  function Connection(atmo) {
-    this.atmo = atmo;
+  function Connection(req) {
+    var self = this;
+    this.isBroken = false;
+    this.req = req;
+    this.req.onError = function(e) {
+      console.log("saw error " + new Date());
+      self.isBroken = true;
+    };
+    this.atmo = atmosphere.subscribe(this.req);
     this.nextId = 0;
     this.dispatch = {};
-    var self = this;
-    setInterval(function(){self.atmo.push(JSON.stringify({"request":{"method":"heartbeat"}}))}, 30000);
+    setInterval(function() {
+      if (self.isBroken) {
+        self.atmo = atmosphere.subscribe(req);
+        self.isBroken = false;
+      } else {
+        self.atmo.push(JSON.stringify({"request":{"method":"heartbeat"}}));
+      }
+    }, 90000);
   }
 
   Connection.prototype.nextHandler = function(handler) {
@@ -104,8 +117,7 @@ define('zinc', ['rsvp', 'atmosphere', 'exports'], function(RSVP, atmosphere, exp
           console.log("invalid message received", msg);
         conn.processIncoming(msg.responseBody);
       };
-      atmo = atmosphere.subscribe(req);
-      conn = new Connection(atmo);
+      conn = new Connection(req);
     });
   };
 });
