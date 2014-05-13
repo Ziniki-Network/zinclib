@@ -16,7 +16,9 @@ import org.zincapi.ResourceHandler;
 import org.zincapi.Response;
 import org.zincapi.Zinc;
 import org.zincapi.ZincInvalidSubscriptionException;
+import org.zincapi.ZincNoResourceHandlerException;
 import org.zincapi.ZincNoSubscriptionException;
+import org.zincapi.jsonapi.Payload;
 
 public abstract class ConcreteConnection implements Connection {
 	private final static Logger logger = LoggerFactory.getLogger("Connection");
@@ -82,7 +84,7 @@ public abstract class ConcreteConnection implements Connection {
 					}
 				}
 				if (json.has("payload"))
-					hr.setPayload(json.getJSONObject("payload"));
+					hr.setPayload(new Payload(json.getJSONObject("payload")));
 				try {
 					// May need more than this if we have a "subscription"
 					Response response = null;
@@ -103,8 +105,10 @@ public abstract class ConcreteConnection implements Connection {
 					r = mapping.get(sub);
 				}
 				if (r != null)
-					((ConcreteMakeRequest)r).handler.response(r, json.getJSONObject("payload"));
+					((ConcreteMakeRequest)r).handler.response(r, new Payload(json.getJSONObject("payload")));
 			}
+		} catch (ZincNoResourceHandlerException ex) {
+			logger.error(ex.getMessage());
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}

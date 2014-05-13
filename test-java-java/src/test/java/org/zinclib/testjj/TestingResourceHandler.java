@@ -8,10 +8,11 @@ import java.util.TimerTask;
 import java.util.TreeMap;
 
 import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.zincapi.HandleRequest;
 import org.zincapi.ResourceHandler;
 import org.zincapi.Response;
+import org.zincapi.jsonapi.Payload;
+import org.zincapi.jsonapi.PayloadItem;
 
 public class TestingResourceHandler implements ResourceHandler {
 	public class Action {
@@ -43,13 +44,19 @@ public class TestingResourceHandler implements ResourceHandler {
 			return;
 		}
 		for (final Action a : actions.get(me).actions) {
-			if (a.delay == 0)
-				response.send(new JSONObject("{\"message\":{\"text\":\"" + a.text + "\"}}"));
-			else
+			if (a.delay == 0) {
+				Payload p = new Payload("messages");
+				PayloadItem item = p.newItem();
+				item.set("text", a.text);
+				response.send(p);
+			} else
 				new Timer().schedule(new TimerTask() {
 					public void run() {
 						try {
-							response.send(new JSONObject("{\"message\":{\"text\":\"" + a.text + "\"}}"));
+							Payload p = new Payload("messages");
+							PayloadItem item = p.newItem();
+							item.set("text", a.text);
+							response.send(p);
 						} catch (JSONException e) {
 							e.printStackTrace();
 						}

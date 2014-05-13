@@ -16,11 +16,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zincapi.Zinc;
 import org.zincapi.inline.server.ZincServlet;
-
-import com.gmmapowell.http.GPServletDefn;
-import com.gmmapowell.http.InlineServer;
-import com.gmmapowell.http.NotifyOnServerReady;
-import com.gmmapowell.serialization.Endpoint;
+import org.zinutils.http.ISServletDefn;
+import org.zinutils.http.InlineServer;
+import org.zinutils.http.NotifyOnServerReady;
+import org.zinutils.serialization.Endpoint;
 
 public class ZincJavaJavaTest extends Runner {
 	private final static Logger logger = LoggerFactory.getLogger("ZJJT");
@@ -47,7 +46,7 @@ public class ZincJavaJavaTest extends Runner {
 	protected void go(final Method method) throws Throwable
 	{
 		InlineServer server = new InlineServer(8480, "org.zincapi.inline.server.ZincServlet");
-		GPServletDefn servlet = server.getBaseServlet();
+		ISServletDefn servlet = server.getBaseServlet();
 		servlet.initParam("org.atmosphere.cpr.sessionSupport", "true");
 //		servlet.initParam("org.zincapi.server.init", "org.zincapi.chirpy.server.Main");
 		servlet.setServletPath("/test");

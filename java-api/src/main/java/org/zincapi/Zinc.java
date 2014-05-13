@@ -115,9 +115,8 @@ public class Zinc {
 			// TODO: This should really support REST-like endpoints
 			// with {id} style syntax and nesting
 			
-			// More urgent todo: this needs to support prefixes and hand the rest back to the request
 			if (handlers.containsKey(resource)) {
-				hr.setResource(""); // TODO: should be whatever is left over once the main body is matched
+				hr.setResource(resource);
 				return handlers.get(resource);
 			}
 		}

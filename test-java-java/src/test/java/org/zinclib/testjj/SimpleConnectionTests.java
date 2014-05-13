@@ -1,6 +1,6 @@
 package org.zinclib.testjj;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 import java.net.ConnectException;
@@ -10,9 +10,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.zincapi.Requestor;
 import org.zincapi.Zinc;
-
-import com.gmmapowell.http.InlineServer;
-import com.gmmapowell.serialization.Endpoint;
+import org.zinutils.http.InlineServer;
+import org.zinutils.serialization.Endpoint;
 
 @RunWith(ZincJavaJavaTest.class)
 public class SimpleConnectionTests {

@@ -1,32 +1,25 @@
 package org.zinclib.testjj;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
-
-import static org.junit.Assert.*;
-
 import org.zincapi.MakeRequest;
 import org.zincapi.ResponseHandler;
-
-import com.gmmapowell.sync.SyncUtils;
+import org.zincapi.jsonapi.Payload;
+import org.zinutils.sync.SyncUtils;
 
 public class TestingResponseHandler implements ResponseHandler {
 	private final List<Exception> errors = new ArrayList<Exception>();
 	private final List<String> responses = new ArrayList<String>();
 
 	@Override
-	public void response(MakeRequest req, JSONObject payload) {
+	public void response(MakeRequest req, Payload payload) {
 		synchronized (responses) {
-			try {
-				responses.add(payload.getJSONObject("message").getString("text"));
-				responses.notify();
-			} catch (JSONException e) {
-				errors.add(e);
-			}
+			responses.add(payload.assertSingle("messages").getString("text"));
+			responses.notify();
 		}
 	}
 

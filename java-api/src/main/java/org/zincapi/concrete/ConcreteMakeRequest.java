@@ -11,6 +11,7 @@ import org.zincapi.MakeRequest;
 import org.zincapi.ResponseHandler;
 import org.zincapi.ZincCannotSetPayloadException;
 import org.zincapi.ZincNoSubscriptionException;
+import org.zincapi.jsonapi.Payload;
 
 public class ConcreteMakeRequest implements MakeRequest {
 	private final Connection conn;
@@ -19,7 +20,7 @@ public class ConcreteMakeRequest implements MakeRequest {
 	private final Map<String,Object> opts = new HashMap<String,Object>();
 	private String resource;
 	private Integer subscriptionHandle;
-	private JSONObject payload;
+	private Payload payload;
 
 	public ConcreteMakeRequest(Connection conn, String method) {
 		this(conn, method, null);
@@ -50,7 +51,7 @@ public class ConcreteMakeRequest implements MakeRequest {
 	}
 	
 	@Override
-	public void setPayload(JSONObject payload) {
+	public void setPayload(Payload payload) {
 		if (this.payload != null)
 			throw new ZincCannotSetPayloadException();
 		this.payload = payload;
@@ -89,7 +90,7 @@ public class ConcreteMakeRequest implements MakeRequest {
 			obj.put("subscription", subscriptionHandle);
 		obj.put("request", req);
 		if (payload != null)
-			obj.put("payload", payload);
+			obj.put("payload", payload.asJSONObject());
 		return obj;
 	}
 }

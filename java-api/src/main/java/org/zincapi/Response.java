@@ -1,11 +1,11 @@
 package org.zincapi;
 
 import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
+import org.zincapi.jsonapi.Payload;
 
 public interface Response {
 
-	void send(JSONObject jsonObject) throws JSONException;
+	void send(Payload obj) throws JSONException;
 
 	void unsubscribed();
 }

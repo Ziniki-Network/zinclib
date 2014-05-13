@@ -12,9 +12,8 @@ import org.atmosphere.cpr.AtmosphereFramework;
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResponse;
 import org.zincapi.Zinc;
-
-import com.gmmapowell.http.ws.AsyncProcessor;
-import com.gmmapowell.reflection.Reflection;
+import org.zinutils.http.ws.AsyncProcessor;
+import org.zinutils.reflection.Reflection;
 
 @SuppressWarnings("serial")
 public class ZincServlet extends HttpServlet {

@@ -1,7 +1,7 @@
 package org.zincapi;
 
 import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
+import org.zincapi.jsonapi.Payload;
 
 public interface MakeRequest {
 
@@ -9,7 +9,7 @@ public interface MakeRequest {
 
 	void setOption(String opt, Object val);
 
-	void setPayload(JSONObject jsonObject);
+	void setPayload(Payload payload);
 
 	void send() throws JSONException;
 

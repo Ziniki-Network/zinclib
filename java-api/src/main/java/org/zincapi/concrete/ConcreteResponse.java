@@ -8,6 +8,7 @@ import org.codehaus.jettison.json.JSONObject;
 import org.zincapi.Connection;
 import org.zincapi.Response;
 import org.zincapi.ZincBrokenConnectionException;
+import org.zincapi.jsonapi.Payload;
 
 public class ConcreteResponse implements Response {
 	private final Connection oc;
@@ -21,14 +22,14 @@ public class ConcreteResponse implements Response {
 	}
 
 	@Override
-	public void send(JSONObject payload) throws JSONException {
+	public void send(Payload payload) throws JSONException {
 		if (unsubscribed)
 			return;
 		
 		try {
 			JSONObject msg = new JSONObject();
 			msg.put("subscription", seq);
-			msg.put("payload", payload);
+			msg.put("payload", payload.asJSONObject());
 			oc.send(msg);
 		} catch (ZincBrokenConnectionException ex) {
 			unsubscribed();

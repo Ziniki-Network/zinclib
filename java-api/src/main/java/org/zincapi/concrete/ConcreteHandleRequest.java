@@ -3,16 +3,16 @@ package org.zincapi.concrete;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.codehaus.jettison.json.JSONObject;
 import org.zincapi.HandleRequest;
 import org.zincapi.Requestor;
+import org.zincapi.jsonapi.Payload;
 
 public class ConcreteHandleRequest implements HandleRequest {
 	private final ConcreteConnection conn;
 	private final String method;
 	private String resource;
 	private final Map<String, Object> options = new TreeMap<String, Object>();
-	private JSONObject payload;
+	private Payload payload;
 
 	public ConcreteHandleRequest(ConcreteConnection conn, String method) {
 		this.conn = conn;
@@ -27,7 +27,7 @@ public class ConcreteHandleRequest implements HandleRequest {
 		options.put(k, object);
 	}
 	
-	public void setPayload(JSONObject payload) {
+	public void setPayload(Payload payload) {
 		this.payload = payload;
 	}
 	
@@ -40,7 +40,17 @@ public class ConcreteHandleRequest implements HandleRequest {
 	public boolean isCreate() {
 		return method.equals("create");
 	}
+
+	@Override
+	public boolean isInvoke() {
+		return method.equals("invoke");
+	}
 	
+	@Override
+	public String getResource() {
+		return resource;
+	}
+
 	@Override
 	public Requestor obtainRequestor() {
 		return conn.newRequestor();
@@ -52,7 +62,12 @@ public class ConcreteHandleRequest implements HandleRequest {
 	}
 
 	@Override
-	public JSONObject getPayload() {
+	public Map<String, Object> options() {
+		return options;
+	}
+
+	@Override
+	public Payload getPayload() {
 		return payload;
 	}
 

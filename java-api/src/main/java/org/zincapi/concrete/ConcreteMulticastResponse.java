@@ -4,9 +4,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.zincapi.MulticastResponse;
 import org.zincapi.Response;
+import org.zincapi.jsonapi.Payload;
 
 public class ConcreteMulticastResponse implements MulticastResponse {
 	private final Set<Response> responses = new HashSet<Response>();
@@ -26,7 +26,7 @@ public class ConcreteMulticastResponse implements MulticastResponse {
 	}
 
 	@Override
-	public void send(JSONObject jsonObject) throws JSONException {
+	public void send(Payload payload) throws JSONException {
 		if (unsubscribed)
 			return;
 		
@@ -35,7 +35,7 @@ public class ConcreteMulticastResponse implements MulticastResponse {
 			tmp = new HashSet<Response>(responses);
 		}
 		for (Response r : tmp) {
-			r.send(jsonObject);
+			r.send(payload);
 		}
 	}
 
