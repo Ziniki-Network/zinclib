@@ -3,7 +3,7 @@
   @module RSVP
   */
 define('rsvp/all', [
-    './promise',
+    'rsvp/promise',
     'exports'
 ], function (__dependency1__, __exports__) {
     'use strict';
@@ -23,8 +23,8 @@ define('rsvp/all', [
     };
 });
 define('rsvp/all_settled', [
-    './promise',
-    './utils',
+    'rsvp/promise',
+    'rsvp/utils',
     'exports'
 ], function (__dependency1__, __dependency2__, __exports__) {
     'use strict';
@@ -189,7 +189,7 @@ define('rsvp/asap', ['exports'], function (__exports__) {
     }
 });
 define('rsvp/config', [
-    './events',
+    'rsvp/events',
     'exports'
 ], function (__dependency1__, __exports__) {
     'use strict';
@@ -214,7 +214,7 @@ define('rsvp/config', [
     __exports__.configure = configure;
 });
 define('rsvp/defer', [
-    './promise',
+    'rsvp/promise',
     'exports'
 ], function (__dependency1__, __exports__) {
     'use strict';
@@ -323,9 +323,9 @@ define('rsvp/events', ['exports'], function (__exports__) {
     };
 });
 define('rsvp/filter', [
-    './all',
-    './map',
-    './utils',
+    'rsvp/all',
+    'rsvp/map',
+    'rsvp/utils',
     'exports'
 ], function (__dependency1__, __dependency2__, __dependency3__, __exports__) {
     'use strict';
@@ -437,8 +437,8 @@ define('rsvp/filter', [
     __exports__['default'] = filter;
 });
 define('rsvp/hash', [
-    './promise',
-    './utils',
+    'rsvp/promise',
+    'rsvp/utils',
     'exports'
 ], function (__dependency1__, __dependency2__, __exports__) {
     'use strict';
@@ -571,8 +571,8 @@ define('rsvp/hash', [
     };
 });
 define('rsvp/hash_settled', [
-    './promise',
-    './utils',
+    'rsvp/promise',
+    'rsvp/utils',
     'exports'
 ], function (__dependency1__, __dependency2__, __exports__) {
     'use strict';
@@ -731,8 +731,8 @@ define('rsvp/hash_settled', [
     }
 });
 define('rsvp/instrument', [
-    './config',
-    './utils',
+    'rsvp/config',
+    'rsvp/utils',
     'exports'
 ], function (__dependency1__, __dependency2__, __exports__) {
     'use strict';
@@ -758,8 +758,8 @@ define('rsvp/instrument', [
     };
 });
 define('rsvp/map', [
-    './promise',
-    './utils',
+    'rsvp/promise',
+    'rsvp/utils',
     'exports'
 ], function (__dependency1__, __dependency2__, __exports__) {
     'use strict';
@@ -861,8 +861,8 @@ define('rsvp/map', [
     };
 });
 define('rsvp/node', [
-    './promise',
-    './utils',
+    'rsvp/promise',
+    'rsvp/utils',
     'exports'
 ], function (__dependency1__, __dependency2__, __exports__) {
     'use strict';
@@ -1041,15 +1041,15 @@ define('rsvp/node', [
     };
 });
 define('rsvp/promise', [
-    './config',
-    './events',
-    './instrument',
-    './utils',
-    './promise/cast',
-    './promise/all',
-    './promise/race',
-    './promise/resolve',
-    './promise/reject',
+    'rsvp/config',
+    'rsvp/events',
+    'rsvp/instrument',
+    'rsvp/utils',
+    'rsvp/promise/cast',
+    'rsvp/promise/all',
+    'rsvp/promise/race',
+    'rsvp/promise/resolve',
+    'rsvp/promise/reject',
     'exports'
 ], function (__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __dependency9__, __exports__) {
     'use strict';
@@ -1373,7 +1373,7 @@ define('rsvp/promise', [
     }
 });
 define('rsvp/promise/all', [
-    '../utils',
+    'rsvp/utils',
     'exports'
 ], function (__dependency1__, __exports__) {
     'use strict';
@@ -1548,7 +1548,7 @@ define('rsvp/promise/cast', ['exports'], function (__exports__) {
     };
 });
 define('rsvp/promise/race', [
-    '../utils',
+    'rsvp/utils',
     'exports'
 ], function (__dependency1__, __exports__) {
     'use strict';
@@ -1746,7 +1746,7 @@ define('rsvp/promise/resolve', ['exports'], function (__exports__) {
     };
 });
 define('rsvp/race', [
-    './promise',
+    'rsvp/promise',
     'exports'
 ], function (__dependency1__, __exports__) {
     'use strict';
@@ -1766,7 +1766,7 @@ define('rsvp/race', [
     };
 });
 define('rsvp/reject', [
-    './promise',
+    'rsvp/promise',
     'exports'
 ], function (__dependency1__, __exports__) {
     'use strict';
@@ -1787,7 +1787,7 @@ define('rsvp/reject', [
     };
 });
 define('rsvp/resolve', [
-    './promise',
+    'rsvp/promise',
     'exports'
 ], function (__dependency1__, __exports__) {
     'use strict';
@@ -1897,22 +1897,22 @@ define('rsvp/utils', ['exports'], function (__exports__) {
     __exports__.keysOf = keysOf;
 });
 define('rsvp', [
-    './rsvp/promise',
-    './rsvp/events',
-    './rsvp/node',
-    './rsvp/all',
-    './rsvp/all_settled',
-    './rsvp/race',
-    './rsvp/hash',
-    './rsvp/hash_settled',
-    './rsvp/rethrow',
-    './rsvp/defer',
-    './rsvp/config',
-    './rsvp/map',
-    './rsvp/resolve',
-    './rsvp/reject',
-    './rsvp/filter',
-    './rsvp/asap',
+    'rsvp/promise',
+    'rsvp/events',
+    'rsvp/node',
+    'rsvp/all',
+    'rsvp/all_settled',
+    'rsvp/race',
+    'rsvp/hash',
+    'rsvp/hash_settled',
+    'rsvp/rethrow',
+    'rsvp/defer',
+    'rsvp/config',
+    'rsvp/map',
+    'rsvp/resolve',
+    'rsvp/reject',
+    'rsvp/filter',
+    'rsvp/asap',
     'exports'
 ], function (__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __dependency9__, __dependency10__, __dependency11__, __dependency12__, __dependency13__, __dependency14__, __dependency15__, __dependency16__, __exports__) {
     'use strict';
