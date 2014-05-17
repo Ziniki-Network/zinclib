@@ -7,6 +7,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ZiNCAPI"/>
 	<classpathentry exported="true" kind="src" path="/ZiNCServer"/>
-	<classpathentry exported="true" kind="lib" path="libs/ZinUtils.jar"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/Utils"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

@@ -1,25 +1,36 @@
 define('zinc', ['rsvp', 'atmosphere', 'exports'], function(RSVP, atmosphere, exports) {
   "use strict";
 
+  var zincConfig = {
+    hbTimeout: 90000
+  };
+  exports.config = zincConfig;
+
   function Connection(req) {
     var self = this;
     this.isBroken = false;
+    this.sentEstablish = false;
     this.req = req;
     this.req.onError = function(e) {
       console.log("saw error " + new Date());
       self.isBroken = true;
+      self.sentEstablish = false;
     };
+    req.logLevel = 'debug';
     this.atmo = atmosphere.subscribe(this.req);
     this.nextId = 0;
     this.dispatch = {};
     setInterval(function() {
       if (self.isBroken) {
+        console.log("attempting to restore connection");
         self.atmo = atmosphere.subscribe(req);
         self.isBroken = false;
-      } else {
+      } else if (self.sentEstablish) {
+        console.log("sending heartbeat");
         self.atmo.push(JSON.stringify({"request":{"method":"heartbeat"}}));
-      }
-    }, 90000);
+      } else
+        console.log("timer fired with nothing to do");
+    }, zincConfig.hbTimeout);
   }
 
   Connection.prototype.nextHandler = function(handler) {
@@ -56,6 +67,10 @@ define('zinc', ['rsvp', 'atmosphere', 'exports'], function(RSVP, atmosphere, exp
     var req = new MakeRequest(this.conn, "create", handler);
     req.req.resource = resource;
     return req;
+  }
+  
+  Requestor.prototype.toString = function() {
+    return "Requestor[" + this.conn.req.url + "]";
   }
   
   function MakeRequest(conn, method, handler) {
@@ -110,6 +125,7 @@ define('zinc', ['rsvp', 'atmosphere', 'exports'], function(RSVP, atmosphere, exp
       req.onOpen = function() {
         var msg = {"request":{"method":"establish"}};
         conn.sendJson(msg);
+        conn.sentEstablish = true;
         resolve(new Requestor(conn));
       };
       req.onMessage = function(msg) {
