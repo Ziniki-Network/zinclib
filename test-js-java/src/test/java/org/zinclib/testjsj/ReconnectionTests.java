@@ -7,17 +7,21 @@ import java.io.IOException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.zincapi.Zinc;
+import org.zincapi.inline.server.ZincServlet;
+import org.zinclib.testjj.TestingResourceHandler;
 import org.zinutils.http.InlineServer;
+import org.zinutils.http.NotifyOnServerReady;
 import org.zinutils.rhino.RhinoEnvironment;
 import org.zinutils.serialization.Endpoint;
 
 @RunWith(ZincRhinoTest.class)
 public class ReconnectionTests {
+	private final InlineServer server;
 	private final Endpoint addr;
 	private final RhinoEnvironment rhino;
-	private final InlineServer server;
+	private final TestingResourceHandler resourceHandler;
 
-	public ReconnectionTests(final InlineServer server, final Endpoint addr, final Zinc zinc, final RhinoEnvironment rhino) {
+	public ReconnectionTests(final InlineServer server, final Endpoint addr, final Zinc zincServer, final RhinoEnvironment rhino) {
 		this.server = server;
 		this.addr = addr;
 		this.rhino = rhino;
@@ -26,29 +30,35 @@ public class ReconnectionTests {
 		rhino.loadResource("/rsvp.amd.js");
 		rhino.loadResource("/atmosphere.js");
 		rhino.loadResource("/zinc.js");
+
+		resourceHandler = new TestingResourceHandler();
+		resourceHandler.immediate(0, "hello");
+		resourceHandler.immediate(1, "there");
+		zincServer.handleResource("test", resourceHandler);
 	}
 
 	@Test
 	public void testClientResubscribesAfterServerDeath() throws IOException {
 		rhino.eval("zinc = requireModule('zinc')");
 		rhino.eval("zinc.config.hbTimeout = 50");
-		rhino.eval("req = zinc.newRequestor('http://"+addr+"/test')");
-		rhino.eval("marker = []");
-		rhino.eval("req.then(function(rq) { marker.push(rq); var s = rq.subscribe('test', function (msg) { messages.push(msg); }); })");
+		rhino.eval("reqPromise = zinc.newRequestor('http://"+addr+"/test')");
+		rhino.eval("req = null");
+		rhino.eval("messages = []");
+		rhino.eval("reqPromise.then(function(rq) { req = rq; var s = req.subscribe('test', function (payload) { var msg = payload.messages[0].text; messages.push(msg); }); s.send(); })");
 
-		// TODO: make this rhino.wait("did not obtain a connection", 1000, "marker.length == 1.0")
-		for (int i=0;i<10;i++) {
-			if (rhino.eval("marker.length == 1.0").equals(true))
-				break;
-			rhino.eval("Envjs.wait(100)");
-		}
-		assertEquals("did not obtain a connection", 1.0, rhino.eval("marker.length"));
-		
+		rhino.wait("did not obtain a connection", 1000, "messages.length == 1.0");
+		server.notify(new NotifyOnServerReady() {
+			@Override
+			public void serverReady(InlineServer inlineServer, Endpoint addr) {
+				ZincServlet zs = (ZincServlet) server.servletFor("/test").getImpl();
+				Zinc zincServer = zs.getZinc();
+				zincServer.handleResource("test", resourceHandler);
+			}
+		});
 		server.restartServer();
-		for (int i=0;i<100;i++) {
-//			if (rhino.eval("marker.length").equals(1.0))
-//				break;
-			rhino.eval("Envjs.wait(100)");
-		}
+
+		rhino.wait("did not reconnect", 1000, "messages.length == 2.0");
+		assertEquals("hello", rhino.eval("messages[0]"));
+		assertEquals("there", rhino.eval("messages[1]"));
 	}
 }

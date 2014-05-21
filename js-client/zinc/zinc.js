@@ -11,6 +11,7 @@ define('zinc', ['rsvp', 'atmosphere', 'exports'], function(RSVP, atmosphere, exp
     this.isBroken = false;
     this.sentEstablish = false;
     this.req = req;
+    this.openSubscriptions = {};
     this.req.onError = function(e) {
       console.log("saw error " + new Date());
       self.isBroken = true;
@@ -24,6 +25,7 @@ define('zinc', ['rsvp', 'atmosphere', 'exports'], function(RSVP, atmosphere, exp
       if (self.isBroken) {
         console.log("attempting to restore connection");
         self.atmo = atmosphere.subscribe(req);
+        self.connect();
         self.isBroken = false;
       } else if (self.sentEstablish) {
         console.log("sending heartbeat");
@@ -33,6 +35,24 @@ define('zinc', ['rsvp', 'atmosphere', 'exports'], function(RSVP, atmosphere, exp
     }, zincConfig.hbTimeout);
   }
 
+  Connection.prototype.connect = function() {
+    var self = this;
+    return new RSVP.Promise(function(resolve, reject) {
+      console.log("sending establish");
+      var msg = {"request":{"method":"establish"}};
+      self.sendJson(msg);
+      self.sentEstablish = true;
+      console.log("resubscribing");
+//      console.log("subs = " + JSON.stringify(self.openSubscriptions));
+      for (var v in self.openSubscriptions)
+        if (self.openSubscriptions.hasOwnProperty(v)) {
+          console.log("Need to re-subscribe to " + JSON.stringify(self.openSubscriptions[v].msg));
+          self.sendJson(self.openSubscriptions[v].msg);
+        }
+      resolve(null);
+    });
+  }
+  
   Connection.prototype.nextHandler = function(handler) {
     var ret = ++this.nextId;
     this.dispatch[ret] = handler;
@@ -105,12 +125,14 @@ define('zinc', ['rsvp', 'atmosphere', 'exports'], function(RSVP, atmosphere, exp
   
   MakeRequest.prototype.send = function() {
     this.conn.sendJson(this.msg);
+    this.conn.openSubscriptions[this.msg.subscription] = this;
   }
   
   MakeRequest.prototype.unsubscribe = function() {
     if (!this.msg.subscription)
       throw "There is no subscription to unsubscribe"
     this.conn.sendJson({subscription: this.msg.subscription, request: {method: "unsubscribe"}});
+    delete this.conn.openSubscriptions[this.msg.subscription];
   }
   
   exports.newRequestor = function(uri) {
@@ -123,10 +145,7 @@ define('zinc', ['rsvp', 'atmosphere', 'exports'], function(RSVP, atmosphere, exp
       req.transport = 'websocket';
       req.fallbackTransport = 'long-polling';
       req.onOpen = function() {
-        var msg = {"request":{"method":"establish"}};
-        conn.sendJson(msg);
-        conn.sentEstablish = true;
-        resolve(new Requestor(conn));
+        conn.connect().then(function(x) { resolve(new Requestor(conn)) });
       };
       req.onMessage = function(msg) {
         if (!msg || !msg.status || msg.status != 200 || !msg.responseBody)

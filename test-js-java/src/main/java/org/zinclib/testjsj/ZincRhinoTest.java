@@ -16,13 +16,11 @@ public class ZincRhinoTest extends ZinRhinoTest {
 		super(underTest);
 	}
 
-	
 	@Override
 	protected void addServlets(InlineServer server) {
 		ISServletDefn servlet = server.addServlet(null, "/test", "org.zincapi.inline.server.ZincServlet");
 		servlet.initParam("org.atmosphere.cpr.sessionSupport", "true");
 	}
-
 
 	@Override
 	protected Constructor<?> getConstructor(Class<?> underTest) throws Exception {
@@ -35,5 +33,4 @@ public class ZincRhinoTest extends ZinRhinoTest {
 		Zinc zinc = zs.getZinc();
 		return ctor.newInstance(server, addr, zinc, rhino);
 	}
-
 }

@@ -45,13 +45,7 @@ public class SimpleConnectionTests {
 		rhino.eval("marker = []");
 		rhino.eval("req.then(function(rq) { java.lang.System.out.println('Promise resolved with ' + rq); marker.push(rq); })");
 		
-		// allow timers etc. to work
-		for (int i=0;i<10;i++) {
-			if (rhino.eval("marker.length").equals(1.0))
-				break;
-			rhino.eval("Envjs.wait(100)");
-		}
-		assertEquals(1.0, rhino.eval("marker.length"));
-		assertNotNull(rhino.eval("marker[0]"));
+		rhino.wait("did not obtain a requestor", 1000, "marker.length == 1.0");
+		assertNotNull("requestor was null", rhino.eval("marker[0]"));
 	}
 }
