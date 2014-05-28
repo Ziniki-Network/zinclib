@@ -89,6 +89,12 @@ define('zinc', ['rsvp', 'atmosphere', 'exports'], function(RSVP, atmosphere, exp
     return req;
   }
   
+  Requestor.prototype.invoke = function(resource, handler) {
+    var req = new MakeRequest(this.conn, "invoke", handler);
+    req.req.resource = resource;
+    return req;
+  }  
+
   Requestor.prototype.toString = function() {
     return "Requestor[" + this.conn.req.url + "]";
   }

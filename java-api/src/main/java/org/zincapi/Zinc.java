@@ -3,7 +3,9 @@ package org.zincapi;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -12,13 +14,14 @@ import org.codehaus.jettison.json.JSONException;
 import org.zincapi.concrete.ConcreteHandleRequest;
 import org.zincapi.concrete.ConcreteMakeRequest;
 import org.zincapi.concrete.ConcreteMulticastResponse;
+import org.zincapi.concrete.SegmentHandler;
 
 public class Zinc {
 	private final Client client; 
 	private final Server server; 
 	private final Map<String, Connection> conns = new TreeMap<String, Connection>();
 	private ResourceHandler defaultHandler;
-	private final Map<String, ResourceHandler> handlers = new TreeMap<String, ResourceHandler>();
+	private final Map<String, SegmentHandler> handlers = new TreeMap<String, SegmentHandler>();
 	private final Map<String, ConcreteMulticastResponse> multicasts = new TreeMap<String, ConcreteMulticastResponse>();
 	private final Set<ConnectionHandler> newConnectionListeners = new HashSet<ConnectionHandler>();
 	private String idType = "client";
@@ -77,10 +80,29 @@ public class Zinc {
 	}
 	
 	public void handleResource(String resource, ResourceHandler handler) {
-		if (resource == null)
+		if (resource == null) {
 			defaultHandler = handler;
-		// TODO: this should be broken up into a REST-like tree structure
-		handlers.put(resource, handler);
+			return;
+		}
+		String[] segments = resource.split("/");
+		if (segments == null || segments.length == 0) {
+			defaultHandler = handler;
+			return;
+		}
+		SegmentHandler h = null;
+		Map<String, SegmentHandler> map = handlers;
+		for (String seg : segments) {
+			String any = null;
+			if (seg.charAt(0) == '{' && seg.charAt(seg.length()-1) == '}') {
+				any = seg.substring(1, seg.length()-1);
+				seg = "{}";
+			}
+			if (!map.containsKey(seg))
+				map.put(seg, new SegmentHandler(any));
+			h = map.get(seg);
+			map = h.handlers;
+		}
+		h.setHandler(resource, handler);
 	}
 
 	public MulticastResponse getMulticastResponse(String name) {
@@ -111,17 +133,32 @@ public class Zinc {
 	}
 	
 	public ResourceHandler getHandler(ConcreteHandleRequest hr, String resource) {
+		hr.setResource(resource);
 		if (resource != null) { 
-			// TODO: This should really support REST-like endpoints
-			// with {id} style syntax and nesting
-			
-			if (handlers.containsKey(resource)) {
-				hr.setResource(resource);
-				return handlers.get(resource);
+			String[] segments = resource.split("/");
+			List<MatchState> curr = new ArrayList<MatchState>();
+			curr.add(new MatchState(handlers));
+			for (String seg : segments) {
+				List<MatchState> toAdd = new ArrayList<MatchState>();
+				for (MatchState k : curr) {
+					SegmentHandler h1 = k.handlers.get(seg);
+					SegmentHandler h2 = k.handlers.get("{}");
+					if (h1 != null)
+						toAdd.add(k.matched(null, h1));
+					if (h2 != null)
+						toAdd.add(k.matched(seg, h2));
+				}
+				curr = toAdd;
+			}
+			if (curr.size() > 1)
+				throw new ZincMultipleMatchException(resource);
+			if (curr.size() == 1) {
+				MatchState sh = curr.get(0);
+				sh.bindParametersTo(hr);
+				return sh.handler();
 			}
 		}
 		if (defaultHandler != null) {
-			hr.setResource(resource);
 			return defaultHandler;
 		}
 		throw new ZincNoResourceHandlerException(resource);

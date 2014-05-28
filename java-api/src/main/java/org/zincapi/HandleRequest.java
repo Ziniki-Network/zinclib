@@ -14,6 +14,8 @@ public interface HandleRequest {
 	
 	String getResource();
 
+	String getResourceParameter(String param);
+
 	Map<String, Object> options();
 
 	Payload getPayload();
@@ -21,4 +23,5 @@ public interface HandleRequest {
 	String getConnectionURI();
 
 	Requestor obtainRequestor();
+
 }

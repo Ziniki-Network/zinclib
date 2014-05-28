@@ -10,9 +10,10 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class PayloadItem {
 	private final Map<String, Object> fields = new HashMap<String, Object>();
+	private Payload payload;
 
 	PayloadItem(Payload payload, String type) {
-		// TODO Auto-generated constructor stub
+		this.payload = payload;
 	}
 
 	public PayloadItem(JSONObject object) throws JSONException {
@@ -24,8 +25,13 @@ public class PayloadItem {
 		}
 	}
 
-	public void set(String field, Object val) {
+	public Payload getPayload() {
+		return payload;
+	}
+
+	public PayloadItem set(String field, Object val) {
 		fields.put(field, val);
+		return this;
 	}
 	
 	public String getString(String s) {

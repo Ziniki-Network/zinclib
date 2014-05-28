@@ -5,12 +5,14 @@ import java.util.TreeMap;
 
 import org.zincapi.HandleRequest;
 import org.zincapi.Requestor;
+import org.zincapi.ZincNoResourceParameterException;
 import org.zincapi.jsonapi.Payload;
 
 public class ConcreteHandleRequest implements HandleRequest {
 	private final ConcreteConnection conn;
 	private final String method;
 	private String resource;
+	private final Map<String, String> parameters = new TreeMap<String, String>();
 	private final Map<String, Object> options = new TreeMap<String, Object>();
 	private Payload payload;
 
@@ -21,6 +23,10 @@ public class ConcreteHandleRequest implements HandleRequest {
 	
 	public void setResource(String resource) {
 		this.resource = resource;
+	}
+
+	public void setResourceParameter(String name, String segment) {
+		this.parameters.put(name, segment);
 	}
 
 	public void setOption(String k, Object object) {
@@ -49,6 +55,13 @@ public class ConcreteHandleRequest implements HandleRequest {
 	@Override
 	public String getResource() {
 		return resource;
+	}
+
+	@Override
+	public String getResourceParameter(String param) {
+		if (parameters.containsKey(param))
+			return parameters.get(param);
+		throw new ZincNoResourceParameterException(param, resource);
 	}
 
 	@Override
