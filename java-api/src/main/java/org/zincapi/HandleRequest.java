@@ -20,8 +20,11 @@ public interface HandleRequest {
 
 	Payload getPayload();
 
+	Connection getConnection();
+
 	String getConnectionURI();
 
 	Requestor obtainRequestor();
+
 
 }

@@ -3,6 +3,7 @@ package org.zincapi.concrete;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.zincapi.Connection;
 import org.zincapi.HandleRequest;
 import org.zincapi.Requestor;
 import org.zincapi.ZincNoResourceParameterException;
@@ -67,6 +68,12 @@ public class ConcreteHandleRequest implements HandleRequest {
 	@Override
 	public Requestor obtainRequestor() {
 		return conn.newRequestor();
+	}
+
+	
+	@Override
+	public Connection getConnection() {
+		return conn;
 	}
 
 	@Override

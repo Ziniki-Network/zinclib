@@ -8,4 +8,6 @@ public interface Response {
 	void send(Payload obj) throws JSONException;
 
 	void unsubscribed();
+
+	Connection getConnection();
 }

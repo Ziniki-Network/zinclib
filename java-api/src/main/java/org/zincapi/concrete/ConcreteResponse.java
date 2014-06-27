@@ -22,6 +22,11 @@ public class ConcreteResponse implements Response {
 	}
 
 	@Override
+	public Connection getConnection() {
+		return oc;
+	}
+
+	@Override
 	public void send(Payload payload) throws JSONException {
 		if (unsubscribed)
 			return;

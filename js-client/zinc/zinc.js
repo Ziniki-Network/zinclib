@@ -2,7 +2,8 @@ define('zinc', ['rsvp', 'atmosphere', 'exports'], function(RSVP, atmosphere, exp
   "use strict";
 
   var zincConfig = {
-    hbTimeout: 90000
+    hbTimeout: 90000,
+    reconnInterval: 2500
   };
   exports.config = zincConfig;
 
@@ -16,18 +17,21 @@ define('zinc', ['rsvp', 'atmosphere', 'exports'], function(RSVP, atmosphere, exp
       console.log("saw error " + new Date());
       self.isBroken = true;
       self.sentEstablish = false;
+      self.reconnecting = setTimeout(function() {
+        if (self.isBroken) {
+          console.log("attempting to restore connection");
+          self.atmo = atmosphere.subscribe(req);
+          self.connect();
+          self.isBroken = false;
+        }
+      }, 2500);
     };
     req.logLevel = 'debug';
     this.atmo = atmosphere.subscribe(this.req);
     this.nextId = 0;
     this.dispatch = {};
     setInterval(function() {
-      if (self.isBroken) {
-        console.log("attempting to restore connection");
-        self.atmo = atmosphere.subscribe(req);
-        self.connect();
-        self.isBroken = false;
-      } else if (self.sentEstablish) {
+      if (self.sentEstablish) {
         console.log("sending heartbeat");
         self.atmo.push(JSON.stringify({"request":{"method":"heartbeat"}}));
       } else
