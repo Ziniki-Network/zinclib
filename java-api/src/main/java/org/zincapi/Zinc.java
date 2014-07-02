@@ -11,12 +11,15 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.codehaus.jettison.json.JSONException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zincapi.concrete.ConcreteHandleRequest;
 import org.zincapi.concrete.ConcreteMakeRequest;
 import org.zincapi.concrete.ConcreteMulticastResponse;
 import org.zincapi.concrete.SegmentHandler;
 
 public class Zinc {
+	private static final Logger logger = LoggerFactory.getLogger("Zinc");
 	private final Client client; 
 	private final Server server; 
 	private final Map<String, Connection> conns = new TreeMap<String, Connection>();
@@ -28,23 +31,29 @@ public class Zinc {
 	private String idAddress;
 
 	public Zinc() {
+		this("org.zincapi.client.ZiNCClient", "org.zincapi.server.ZiNCServer");
+	}
+	
+	public Zinc(String cliClass, String servClass) {
 		{
 			Client c = null;
 			try {
-				Class<?> tmp = Class.forName("org.zincapi.client.ZiNCClient");
+				Class<?> tmp = Class.forName(cliClass);
 				Constructor<?> ctor = tmp.getConstructor(Zinc.class);
 				c = (Client) ctor.newInstance(this);
 			} catch (Throwable ex) {
+				logger.info("There is no client class " + cliClass + " available");
 			}
 			client = c;
 		}
 		{
 			Server s = null;
 			try {
-				Class<?> tmp = Class.forName("org.zincapi.server.ZiNCServer");
+				Class<?> tmp = Class.forName(servClass);
 				Constructor<?> ctor = tmp.getConstructor(Zinc.class);
 				s = (Server) ctor.newInstance(this);
 			} catch (Throwable ex) {
+				logger.info("There is no server class " + servClass + " available");
 			}
 			server = s;
 		}
@@ -65,7 +74,7 @@ public class Zinc {
 		if (conns.containsKey(url))
 			conn = conns.get(url);
 		else {
-			conn = client.createConnection(url);
+			conn = client.createConnection(uri);
 			conns.put(url, conn);
 			ConcreteMakeRequest mr = new ConcreteMakeRequest(conn, "establish");
 			mr.setOption("type", idType);
@@ -170,7 +179,7 @@ public class Zinc {
 	}
 
 	public interface Client {
-		Connection createConnection(String url) throws IOException;
+		Connection createConnection(URI url) throws IOException;
 		Requestor requestor(Connection conn);
 	}
 

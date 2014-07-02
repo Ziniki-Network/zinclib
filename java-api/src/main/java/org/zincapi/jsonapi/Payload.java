@@ -1,5 +1,6 @@
 package org.zincapi.jsonapi;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -50,6 +51,21 @@ public class Payload {
 		return ret;
 	}
 
+	public Payload addJSONItem(JSONObject json) throws JSONException {
+		PayloadItem toAdd = newItem();
+		@SuppressWarnings("unchecked")
+		Iterator<String> it = json.keys();
+		while (it.hasNext()) {
+			String s = it.next();
+			toAdd.set(s, json.get(s));
+		}
+		return this;
+	}
+
+	public String getType() {
+		return type;
+	}
+
 	public PayloadItem assertSingle(String ty) {
 		if (!type.equals(ty) || items.size() != 1)
 			throw new ZincNotSingletonException(ty, type, items.size());
@@ -63,5 +79,9 @@ public class Payload {
 		for (PayloadItem pi : items)
 			mainArray.put(pi.asJSONObject());
 		return ret;
+	}
+
+	public Collection<PayloadItem> items() {
+		return items;
 	}
 }

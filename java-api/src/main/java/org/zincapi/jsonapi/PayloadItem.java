@@ -33,7 +33,7 @@ public class PayloadItem {
 		fields.put(field, val);
 		return this;
 	}
-	
+
 	public String getString(String s) {
 		return (String) fields.get(s);
 	}

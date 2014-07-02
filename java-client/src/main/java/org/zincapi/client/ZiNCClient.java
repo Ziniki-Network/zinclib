@@ -1,6 +1,7 @@
 package org.zincapi.client;
 
 import java.io.IOException;
+import java.net.URI;
 
 import org.atmosphere.wasync.Client;
 import org.atmosphere.wasync.ClientFactory;
@@ -20,11 +21,11 @@ public class ZiNCClient implements Zinc.Client {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public Connection createConnection(String url) throws IOException {
+	public Connection createConnection(URI url) throws IOException {
 		Client client = ClientFactory.getDefault().newClient();
 		RequestBuilder request = client.newRequestBuilder()
 				.method(METHOD.GET)
-				.uri(url)
+				.uri(url.toASCIIString())
 				.transport(TRANSPORT.WEBSOCKET)
 				.transport(TRANSPORT.LONG_POLLING);
 
