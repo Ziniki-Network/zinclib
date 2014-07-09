@@ -1,78 +1,5 @@
 package org.zincapi.peer.ssl;
 
-/*
- * Copyright (c) 2004, Oracle and/or its affiliates. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * -Redistribution of source code must retain the above copyright
- *  notice, this list of conditions and the following disclaimer.
- *
- * -Redistribution in binary form must reproduce the above copyright
- *  notice, this list of conditions and the following disclaimer in the
- *  documentation and/or other materials provided with the
- *  distribution.
- *
- * Neither the name of Oracle nor the names of
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * This software is provided "AS IS," without a warranty of any kind.
- * ALL EXPRESS OR IMPLIED CONDITIONS, REPRESENTATIONS AND WARRANTIES,
- * INCLUDING ANY IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A
- * PARTICULAR PURPOSE OR NON-INFRINGEMENT, ARE HEREBY EXCLUDED. SUN
- * MIDROSYSTEMS, INC. ("SUN") AND ITS LICENSORS SHALL NOT BE LIABLE FOR
- * ANY DAMAGES SUFFERED BY LICENSEE AS A RESULT OF USING, MODIFYING OR
- * DISTRIBUTING THIS SOFTWARE OR ITS DERIVATIVES. IN NO EVENT WILL SUN
- * OR ITS LICENSORS BE LIABLE FOR ANY LOST REVENUE, PROFIT OR DATA, OR
- * FOR DIRECT, INDIRECT, SPECIAL, CONSEQUENTIAL, INCIDENTAL OR PUNITIVE
- * DAMAGES, HOWEVER CAUSED AND REGARDLESS OF THE THEORY OF LIABILITY,
- * ARISING OUT OF THE USE OF OR INABILITY TO USE THIS SOFTWARE, EVEN IF
- * SUN HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
- *
- * You acknowledge that this software is not designed, licensed or
- * intended for use in the design, construction, operation or
- * maintenance of any nuclear facility.
- */
-
-/**
- * A SSLEngine usage example which simplifies the presentation
- * by removing the I/O and multi-threading concerns.
- *
- * The demo creates two SSLEngines, simulating a client and server.
- * The "transport" layer consists two ByteBuffers:  think of them
- * as directly connected pipes.
- *
- * Note, this is a *very* simple example: real code will be much more
- * involved.  For example, different threading and I/O models could be
- * used, transport mechanisms could close unexpectedly, and so on.
- *
- * When this application runs, notice that several messages
- * (wrap/unwrap) pass before any application data is consumed or
- * produced.  (For more information, please see the SSL/TLS
- * specifications.)  There may several steps for a successful handshake,
- * so it's typical to see the following series of operations:
- *
- *      client          server          message
- *      ======          ======          =======
- *      wrap()          ...             ClientHello
- *      ...             unwrap()        ClientHello
- *      ...             wrap()          ServerHello/Certificate
- *      unwrap()        ...             ServerHello/Certificate
- *      wrap()          ...             ClientKeyExchange
- *      wrap()          ...             ChangeCipherSpec
- *      wrap()          ...             Finished
- *      ...             unwrap()        ClientKeyExchange
- *      ...             unwrap()        ChangeCipherSpec
- *      ...             unwrap()        Finished
- *      ...             wrap()          ChangeCipherSpec
- *      ...             wrap()          Finished
- *      unwrap()        ...             ChangeCipherSpec
- *      unwrap()        ...             Finished
- */
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -100,6 +27,7 @@ import org.zincapi.Zinc;
 import org.zincapi.ZincException;
 import org.zincapi.peer.ssl.ZincSSLParticipant.MyStat;
 import org.zincapi.peer.ssl.client.ZincSSL;
+import org.zinutils.exceptions.UtilException;
 import org.zinutils.sync.Promise;
 import org.zinutils.sync.SyncUtils;
 
@@ -118,7 +46,9 @@ public class ZincSSLPeerManager implements Runnable, ZincSSLAcceptSelected {
 
 	// Just for testing ...
     public static void main(String args[]) throws Exception {
-        ZincSSLPeerManager mgr = new ZincSSLPeerManager(4093);
+    	if (args.length == 0)
+    		throw new UtilException("Usage: ZincSSLPeerManager <keystore>");
+        ZincSSLPeerManager mgr = new ZincSSLPeerManager(args[0], 4093);
         Thread thread = new Thread(mgr);
         thread.setDaemon(true);
 		thread.start();
@@ -129,20 +59,18 @@ public class ZincSSLPeerManager implements Runnable, ZincSSLAcceptSelected {
         mgr.pool.shutdown();
     }
     
-    public ZincSSLPeerManager(int port) throws Exception {
-    	this(Selector.open(), port);
+    public ZincSSLPeerManager(String keyStore, int port) throws Exception {
+    	this(Selector.open(), keyStore, port);
     }
 
-    public ZincSSLPeerManager(Selector sel, int port) throws Exception {
-		String keyStoreFile = "/Users/gareth/Ziniki/Code/Ziniki/MockKernel/src/main/resources/ziniki.ks";
-        String trustStoreFile = "/Users/gareth/Ziniki/Code/Ziniki/MockKernel/src/main/resources/ziniki.ks";
+    public ZincSSLPeerManager(Selector sel, String keyStore, int port) throws Exception {
         String passwd = "password";
 
         KeyStore ks = KeyStore.getInstance("JKS");
         KeyStore ts = KeyStore.getInstance("JKS");
         char[] passphrase = passwd.toCharArray();
-        ks.load(new FileInputStream(keyStoreFile), passphrase);
-        ts.load(new FileInputStream(trustStoreFile), passphrase);
+        ks.load(new FileInputStream(keyStore), passphrase);
+        ts.load(new FileInputStream(keyStore), passphrase);
         KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
         kmf.init(ks, passphrase);
         TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
