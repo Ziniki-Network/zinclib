@@ -6,4 +6,6 @@ public interface Requestor {
 
 	MakeRequest create(String resource, ResponseHandler handler);
 
+	MakeRequest invoke(String resource, ResponseHandler handler);
+
 }

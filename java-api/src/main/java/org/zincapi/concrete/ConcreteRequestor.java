@@ -22,7 +22,16 @@ public class ConcreteRequestor implements Requestor {
 
 	@Override
 	public MakeRequest create(String resource, ResponseHandler handler) {
-		ConcreteMakeRequest ret = new ConcreteMakeRequest(conn, "create", handler);
+		return requestWithOptionalHandler("create", resource, handler);
+	}
+
+	@Override
+	public MakeRequest invoke(String resource, ResponseHandler handler) {
+		return requestWithOptionalHandler("invoke", resource, handler);
+	}
+
+	private MakeRequest requestWithOptionalHandler(String method, String resource, ResponseHandler handler) {
+		ConcreteMakeRequest ret = new ConcreteMakeRequest(conn, method, handler);
 		if (handler != null)
 			ret.requireSubcription();
 		ret.setResource(resource);
