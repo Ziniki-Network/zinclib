@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -34,6 +35,10 @@ public class PayloadItem {
 		return this;
 	}
 
+	public Set<String> keys() {
+		return fields.keySet();
+	}
+	
 	public String getString(String s) {
 		return (String) fields.get(s);
 	}
