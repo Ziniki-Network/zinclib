@@ -39,6 +39,10 @@ public class PayloadItem {
 		return fields.keySet();
 	}
 	
+	public Object get(String s) {
+		return fields.get(s);
+	}
+
 	public String getString(String s) {
 		return (String) fields.get(s);
 	}

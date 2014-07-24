@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.codehaus.jettison.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zincapi.concrete.ConcreteHandleRequest;
@@ -66,26 +65,26 @@ public class Zinc {
 		idAddress = address;
 	}
 	
-	public Requestor newRequestor(URI uri) throws IOException {
-		if (client == null)
-			throw new ZincNoClientException();
-		String url = uri.toString();
-		Connection conn;
-		if (conns.containsKey(url))
-			conn = conns.get(url);
-		else {
-			conn = client.createConnection(uri);
-			conns.put(url, conn);
-			ConcreteMakeRequest mr = new ConcreteMakeRequest(conn, "establish");
-			mr.setOption("type", idType);
-			mr.setOption("address", idAddress);
-			try {
+	public Requestor newRequestor(URI uri) {
+		try {
+			if (client == null)
+				throw new ZincNoClientException();
+			String url = uri.toString();
+			Connection conn;
+			if (conns.containsKey(url))
+				conn = conns.get(url);
+			else {
+				conn = client.createConnection(uri);
+				conns.put(url, conn);
+				ConcreteMakeRequest mr = new ConcreteMakeRequest(conn, "establish");
+				mr.setOption("type", idType);
+				mr.setOption("address", idAddress);
 				mr.send();
-			} catch (JSONException ex) {
-				ex.printStackTrace();
 			}
+			return client.requestor(conn);
+		} catch (Exception ex) {
+			throw ZincException.wrap(ex);
 		}
-		return client.requestor(conn);
 	}
 	
 	public void handleResource(String resource, ResourceHandler handler) {

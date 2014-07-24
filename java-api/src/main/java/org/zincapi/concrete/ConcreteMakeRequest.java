@@ -10,6 +10,7 @@ import org.zincapi.Connection;
 import org.zincapi.MakeRequest;
 import org.zincapi.ResponseHandler;
 import org.zincapi.ZincCannotSetPayloadException;
+import org.zincapi.ZincException;
 import org.zincapi.ZincNoSubscriptionException;
 import org.zincapi.jsonapi.Payload;
 
@@ -20,7 +21,7 @@ public class ConcreteMakeRequest implements MakeRequest {
 	private final Map<String,Object> opts = new HashMap<String,Object>();
 	private String resource;
 	private Integer subscriptionHandle;
-	private Payload payload;
+	private JSONObject payload;
 
 	public ConcreteMakeRequest(Connection conn, String method) {
 		this(conn, method, null);
@@ -52,26 +53,49 @@ public class ConcreteMakeRequest implements MakeRequest {
 	
 	@Override
 	public void setPayload(Payload payload) {
-		if (this.payload != null)
-			throw new ZincCannotSetPayloadException();
-		this.payload = payload;
+		try {
+			if (this.payload != null)
+				throw new ZincCannotSetPayloadException();
+			this.payload = payload.asJSONObject();
+		} catch (Exception ex) {
+			throw ZincException.wrap(ex);
+		}
 	}
 
 	@Override
-	public void send() throws JSONException {
-		conn.send(asJSON());
+	public void setPayload(String payload) {
+		try {
+			if (this.payload != null)
+				throw new ZincCannotSetPayloadException();
+			this.payload = new JSONObject(payload);
+		} catch (Exception ex) {
+			throw ZincException.wrap(ex);
+		}
+	}
+
+	@Override
+	public void send() {
+		try {
+			conn.send(asJSON());
+		} catch (Exception ex) {
+			throw ZincException.wrap(ex);
+		}
 	}
 	
 	@Override
-	public void unsubscribe() throws JSONException {
-		if (subscriptionHandle == null)
-			throw new ZincNoSubscriptionException();
-		JSONObject req = new JSONObject();
-		req.put("method", "unsubscribe");
-		JSONObject usmsg = new JSONObject();
-		usmsg.put("subscription", subscriptionHandle);
-		usmsg.put("request", req);
-		conn.send(usmsg);
+	public void unsubscribe() {
+		try {
+			if (subscriptionHandle == null)
+				throw new ZincNoSubscriptionException();
+			JSONObject req = new JSONObject();
+			req.put("method", "unsubscribe");
+			JSONObject usmsg = new JSONObject();
+			usmsg.put("subscription", subscriptionHandle);
+			usmsg.put("request", req);
+			conn.send(usmsg);
+		} catch (Exception ex) {
+			throw ZincException.wrap(ex);
+		}
 	}
 
 	private JSONObject asJSON() throws JSONException {
@@ -90,7 +114,7 @@ public class ConcreteMakeRequest implements MakeRequest {
 			obj.put("subscription", subscriptionHandle);
 		obj.put("request", req);
 		if (payload != null)
-			obj.put("payload", payload.asJSONObject());
+			obj.put("payload", payload);
 		return obj;
 	}
 }
