@@ -8,23 +8,26 @@ public interface MakeRequest {
 	 * Options stand to one side of the actual payload or resource of the request, in much the same way that query parameters do in URIs
 	 * @param opt the name of the option
 	 * @param val the value of the option
+	 * @return this object
 	 */
-	void setOption(String opt, Object val);
+	MakeRequest setOption(String opt, Object val);
 
 	/** Set the request payload.
 	 * The payload should be formatted as a JSONAPI structure, and the Payload class helps you to achieve this.
 	 * @param payload the payload to send
+	 * @return this object
 	 * @throws JSONException 
 	 */
-	void setPayload(Payload payload);
+	MakeRequest setPayload(Payload payload);
 
 	/** It is also possible to set a payload to be a string.
 	 * There are two use cases for this: if you happen to have a JSONAPI payload formatted as a string, it is possible to use it directly;
 	 * if you have a "non-conforming" client and server, which have agreed not to use JSONAPI format, then this can be used to send non-JSONAPI strings.
 	 * @param payload the payload as a string
+	 * @return this object
 	 * @throws JSONException 
 	 */
-	void setPayload(String payload);
+	MakeRequest setPayload(String payload);
 
 	/** Send the request.
 	 * Until send is called, the request will just be hanging in space.  It can be configured but it will not act.

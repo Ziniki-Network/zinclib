@@ -47,27 +47,30 @@ public class ConcreteMakeRequest implements MakeRequest {
 	}
 
 	@Override
-	public void setOption(String opt, Object val) {
+	public MakeRequest setOption(String opt, Object val) {
 		opts.put(opt, val);
+		return this;
 	}
 	
 	@Override
-	public void setPayload(Payload payload) {
+	public MakeRequest setPayload(Payload payload) {
 		try {
 			if (this.payload != null)
 				throw new ZincCannotSetPayloadException();
 			this.payload = payload.asJSONObject();
+			return this;
 		} catch (Exception ex) {
 			throw ZincException.wrap(ex);
 		}
 	}
 
 	@Override
-	public void setPayload(String payload) {
+	public MakeRequest setPayload(String payload) {
 		try {
 			if (this.payload != null)
 				throw new ZincCannotSetPayloadException();
 			this.payload = new JSONObject(payload);
+			return this;
 		} catch (Exception ex) {
 			throw ZincException.wrap(ex);
 		}
