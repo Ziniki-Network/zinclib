@@ -193,16 +193,16 @@ public class ZincSSLPeerManager implements Runnable, ZincSSLAcceptSelected {
 		sel.wakeup();
 	}
 
-	public void connectTo(SocketAddress addr, Promise<ZincSSLParticipant> promise) throws Exception {
+	public void connectTo(SocketAddress addr, Promise<ZincSSLParticipant> ret) throws Exception {
         SocketChannel c = SocketChannel.open();
         c.configureBlocking(false);
         ZincSSLParticipant cli = new ZincSSLParticipant(this, c, false);
         boolean connected = c.connect(addr);
         if (connected) {
     		c.register(sel, SelectionKey.OP_READ, cli);
-    		promise.completed(cli);
+    		ret.completed(cli);
         } else {
-        	cli.onComplete = promise;
+        	cli.onComplete = ret;
         	c.register(sel, SelectionKey.OP_CONNECT, cli);
         }
 	}

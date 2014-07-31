@@ -3,7 +3,6 @@ package org.zincapi.peer.ssl.client;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.util.concurrent.Future;
 
 import org.zincapi.Connection;
 import org.zincapi.Requestor;
@@ -11,6 +10,7 @@ import org.zincapi.Zinc;
 import org.zincapi.concrete.ConcreteRequestor;
 import org.zincapi.peer.ssl.ZincSSLParticipant;
 import org.zinutils.exceptions.UtilException;
+import org.zinutils.sync.Promise;
 
 public class ZiNCClient implements Zinc.Client {
 	private final ZincSSL zinc;
@@ -23,9 +23,9 @@ public class ZiNCClient implements Zinc.Client {
 	public Connection createConnection(URI url) throws IOException {
 		String host = url.getHost();
 		int port = url.getPort();
-		Future<ZincSSLParticipant> client = zinc.createClient(new InetSocketAddress(host, port));
+		Promise<ZincSSLParticipant> client = zinc.createClient(new InetSocketAddress(host, port));
 		try {
-			ZincSSLParticipant cli = client.get();
+			ZincSSLParticipant cli = client.lazyget();
 			return cli.conn;
 		} catch (Exception ex) {
 			if (ex.getCause() instanceof IOException)

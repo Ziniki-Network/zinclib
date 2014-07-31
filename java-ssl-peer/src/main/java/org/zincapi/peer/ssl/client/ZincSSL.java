@@ -1,7 +1,6 @@
 package org.zincapi.peer.ssl.client;
 
 import java.net.SocketAddress;
-import java.util.concurrent.Future;
 
 import org.zincapi.Zinc;
 import org.zincapi.peer.ssl.ZincSSLParticipant;
@@ -18,7 +17,7 @@ public class ZincSSL extends Zinc {
 
 	// This can be called from an arbitrary thread
 	// In fact, it cannot be called from the selectionThread
-	public Future<ZincSSLParticipant> createClient(final SocketAddress addr) {
+	public Promise<ZincSSLParticipant> createClient(final SocketAddress addr) {
 		final Promise<ZincSSLParticipant> ret = new Promise<ZincSSLParticipant>();
 		mgr.assertNotSelectionThread();
 		mgr.runTask(new Runnable() {
@@ -33,7 +32,6 @@ public class ZincSSL extends Zinc {
 		});
 //        ZincSSLParticipant cli = new ZincSSLParticipant(mgr, c, false);
 //		c.register(mgr.sel, SelectionKey.OP_READ, cli);
-		// TODO Auto-generated method stub
 		return ret;
 	}
 }
