@@ -12,8 +12,8 @@
 	<classpathentry kind="lib" path="/ZiNCServer/libs/servlet-api.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ZiNCInline"/>
 	<classpathentry kind="lib" path="/prodtools-qb/mvncache/rhino/js/1.7R2/js-1.7R2.jar"/>
-	<classpathentry kind="lib" path="/ZiNCClient/libs/wasync-1.3.1.jar"/>
 	<classpathentry kind="lib" path="/ZiNCClient/libs/netty-3.9.0.Final.jar"/>
 	<classpathentry kind="src" path="/ZincTestJJ"/>
+	<classpathentry kind="lib" path="/ZiNCClient/libs/wasync-1.4.0.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
