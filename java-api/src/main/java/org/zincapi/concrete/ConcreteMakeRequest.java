@@ -1,9 +1,11 @@
 package org.zincapi.concrete;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.zincapi.Connection;
@@ -109,8 +111,18 @@ public class ConcreteMakeRequest implements MakeRequest {
 		if (!opts.isEmpty()) {
 			JSONObject options = new JSONObject();
 			req.put("options", options);
-			for (Entry<String, Object> e : opts.entrySet())
-				options.put(e.getKey(), e.getValue());
+			for (Entry<String, Object> e : opts.entrySet()) {
+				Object v = e.getValue();
+				if (v instanceof List) {
+					@SuppressWarnings("unchecked")
+					List<String> sv = (List<String>)v;
+					JSONArray a = new JSONArray();
+					for (String s : sv)
+						a.put(s);
+					v = a;
+				}
+				options.put(e.getKey(), v);
+			}
 		}
 		JSONObject obj = new JSONObject();
 		if (subscriptionHandle != null)

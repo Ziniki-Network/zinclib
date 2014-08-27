@@ -1,10 +1,13 @@
 package org.zincapi.concrete;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
@@ -80,7 +83,15 @@ public abstract class ConcreteConnection implements Connection {
 					Iterator<String> keys = opts.keys();
 					while (keys.hasNext()) {
 						String k = keys.next();
-						hr.setOption(k, opts.get(k));
+						Object v = opts.get(k);
+						if (v instanceof JSONArray) {
+							List<String> l = new ArrayList<String>();
+							JSONArray a = (JSONArray) v;
+							for (int i=0;i<a.length();i++)
+								l.add(a.getString(i));
+							v = l;
+						}
+						hr.setOption(k, v);
 					}
 				}
 				if (json.has("payload"))
