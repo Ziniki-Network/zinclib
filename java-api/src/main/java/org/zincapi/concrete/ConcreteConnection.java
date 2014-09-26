@@ -96,19 +96,31 @@ public abstract class ConcreteConnection implements Connection {
 				}
 				if (json.has("payload"))
 					hr.setPayload(new Payload(json.getJSONObject("payload")));
+				Integer replyTo = null;
+				String idField = null;
+				Exception err = null;
+				ConcreteResponse response = null;
 				try {
 					// May need more than this if we have a "subscription"
-					Response response = null;
 					if (json.has("subscription")) {
 						int sub = json.getInt("subscription");
+						replyTo = sub;
 						response = new ConcreteResponse(this, sub);
+						idField = "subscription";
 						subscriptions.put(sub, response);
+					} else if (json.has("requestid")) {
+						replyTo = json.getInt("requestid");
+						idField = "requestid";
 					}
 					handler.handle(hr, response);
 				} catch (Exception ex) {
+					err = ex;
 					ex.printStackTrace();
-					// TODO: send a "500" exception back
 				}
+				if (response == null && replyTo != null)
+					response = new ConcreteResponse(this, replyTo);
+				if (response != null && !response.sent())
+					response.sendStatus(idField, null, err);
 			} else {
 				int sub = json.getInt("subscription");
 				MakeRequest r;

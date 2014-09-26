@@ -13,6 +13,7 @@ import org.zincapi.jsonapi.Payload;
 public class ConcreteResponse implements Response {
 	private final Connection oc;
 	private final int seq;
+	private boolean sentSomething = false;
 	private boolean unsubscribed;
 	private final Set<ConcreteMulticastResponse> multicasters = new HashSet<ConcreteMulticastResponse>();
 
@@ -36,9 +37,29 @@ public class ConcreteResponse implements Response {
 			msg.put("subscription", seq);
 			msg.put("payload", payload.asJSONObject());
 			oc.send(msg);
+			sentSomething = true;
 		} catch (ZincBrokenConnectionException ex) {
 			unsubscribed();
 		}
+	}
+	
+	public void sendStatus(String idField, String status, Object error) throws JSONException {
+		try {
+			JSONObject msg = new JSONObject();
+			msg.put(idField, seq);
+			if (error != null)
+				msg.put("error", error.toString());
+			if (status != null)
+				msg.put("status", status);
+			oc.send(msg);
+			sentSomething = true;
+		} catch (ZincBrokenConnectionException ex) {
+			unsubscribed();
+		}
+	}
+	
+	public boolean sent() {
+		return sentSomething;
 	}
 
 	@Override

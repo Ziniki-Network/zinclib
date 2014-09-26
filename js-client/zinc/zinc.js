@@ -14,6 +14,7 @@ function Connection(req) {
   this.isBroken = false;
   this.sentEstablish = false;
   this.req = req;
+  this.promises = {};
   this.openSubscriptions = {};
   this.req.onError = function(e) {
     console.log("saw error " + new Date());
@@ -76,10 +77,29 @@ Connection.prototype.sendJson = function(json) {
 
 Connection.prototype.processIncoming = function(json) {
   var msg = JSON.parse(json);
+  if (msg.requestid)
+    this.handlePromise(msg.requestid, json);
   if (!msg.subscription)
     return;
   var h = this.dispatch[msg.subscription];
-  h(msg.payload);
+  this.handlePromise(msg.subscription, json);
+  if (msg.action)
+    h(msg.payload, msg.action);
+  else
+    h(msg.payload, 'replace');
+}
+
+Connection.prototype.handlePromise = function(id, json) {
+  var p = this.promises[id];
+  if (!p)
+    return;
+  if (json.error)
+    p.reject(json.error);
+  else if (json.status)
+    p.resolve(json.status);
+  else
+    p.resolve(null);
+  delete this.promises[id];
 }
   
 function Requestor(conn) {
@@ -145,8 +165,20 @@ MakeRequest.prototype.setPayload = function(json) {
 }
 
 MakeRequest.prototype.send = function() {
-  this.conn.sendJson(this.msg);
-  this.conn.openSubscriptions[this.msg.subscription] = this;
+  var req = this;
+  var msg = this.msg;
+  var conn = this.conn;
+  return new Promise(function(resolve, reject) {
+    var id;
+    if (msg.subscription) {
+      id = msg.subscription;
+      conn.openSubscriptions[id] = req;
+    } else
+      id = msg.requestid = ++conn.nextId;
+    conn.promises[id] = { resolve: resolve, reject: reject };
+    console.log("sending message", msg);
+    conn.sendJson(msg);
+  });
 }
 
 MakeRequest.prototype.unsubscribe = function() {
