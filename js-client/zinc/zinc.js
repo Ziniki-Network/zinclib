@@ -9,6 +9,13 @@ var zincConfig = {
 };
 export {zincConfig as config};
 
+function ZincError(message) {
+    this.name = "ZincError";
+    this.message = message;
+    this.stack = (new Error()).stack;
+}
+ZincError.prototype = new Error();
+
 function Connection(req) {
   var self = this;
   this.isBroken = false;
@@ -78,11 +85,11 @@ Connection.prototype.sendJson = function(json) {
 Connection.prototype.processIncoming = function(json) {
   var msg = JSON.parse(json);
   if (msg.requestid)
-    this.handlePromise(msg.requestid, json);
+    this.handlePromise(msg.requestid, msg);
   if (!msg.subscription)
     return;
   var h = this.dispatch[msg.subscription];
-  this.handlePromise(msg.subscription, json);
+  this.handlePromise(msg.subscription, msg);
   if (msg.action)
     h(msg.payload, msg.action);
   else
@@ -94,7 +101,7 @@ Connection.prototype.handlePromise = function(id, json) {
   if (!p)
     return;
   if (json.error)
-    p.reject(json.error);
+    p.reject(new ZincError(json.error));
   else if (json.status)
     p.resolve(json.status);
   else
