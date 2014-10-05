@@ -1,14 +1,13 @@
 package org.zincapi.concrete;
 
-import org.zincapi.Connection;
 import org.zincapi.MakeRequest;
 import org.zincapi.Requestor;
 import org.zincapi.ResponseHandler;
 
 public class ConcreteRequestor implements Requestor {
-	private final Connection conn;
+	private final ConcreteConnection conn;
 
-	public ConcreteRequestor(Connection conn) {
+	public ConcreteRequestor(ConcreteConnection conn) {
 		this.conn = conn;
 	}
 

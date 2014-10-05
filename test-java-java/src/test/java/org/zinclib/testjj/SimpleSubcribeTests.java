@@ -1,6 +1,7 @@
 package org.zinclib.testjj;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.net.URI;
 
@@ -10,6 +11,7 @@ import org.zincapi.Requestor;
 import org.zincapi.Zinc;
 import org.zinutils.http.InlineServer;
 import org.zinutils.serialization.Endpoint;
+import org.zinutils.sync.Promise;
 
 @RunWith(ZincJavaJavaTest.class)
 public class SimpleSubcribeTests extends TestingResponseHandler {
@@ -30,7 +32,9 @@ public class SimpleSubcribeTests extends TestingResponseHandler {
 		Zinc client = new Zinc();
 		Requestor requestor = client.newRequestor(URI.create("http://"+addr+"/test"));
 		assertNotNull(requestor);
-		requestor.subscribe("simple", this).send();
+		Promise<String> onConnect = requestor.subscribe("simple", this).send();
+		String r = onConnect.resolve(500);
+		assertNull(r);
 		assertMessages("hello");
 		throwErrors();
 	}

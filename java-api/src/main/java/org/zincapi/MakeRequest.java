@@ -1,6 +1,7 @@
 package org.zincapi;
 
 import org.zincapi.jsonapi.Payload;
+import org.zinutils.sync.Promise;
 
 public interface MakeRequest {
 
@@ -33,7 +34,7 @@ public interface MakeRequest {
 	 * Until send is called, the request will just be hanging in space.  It can be configured but it will not act.
 	 * @throws JSONException
 	 */
-	void send();
+	Promise<String> send();
 
 	/** Recover the handler associated with this request.
 	 * This is a convenience method for users who wish to maintain just a pointer to the request. 

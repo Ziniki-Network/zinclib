@@ -14,5 +14,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/ZiNCAPI"/>
 	<classpathentry exported="true" kind="lib" path="/ZiNCAPI/libs/jettison-1.3.5.jar"/>
 	<classpathentry kind="lib" path="libs/wasync-1.4.0.jar"/>
+	<classpathentry kind="src" path="/Utils"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

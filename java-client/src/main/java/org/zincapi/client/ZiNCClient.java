@@ -11,6 +11,7 @@ import org.atmosphere.wasync.RequestBuilder;
 import org.zincapi.Connection;
 import org.zincapi.Requestor;
 import org.zincapi.Zinc;
+import org.zincapi.concrete.ConcreteConnection;
 import org.zincapi.concrete.ConcreteRequestor;
 
 public class ZiNCClient implements Zinc.Client {
@@ -34,6 +35,6 @@ public class ZiNCClient implements Zinc.Client {
 
 	@Override
 	public Requestor requestor(Connection conn) {
-		return new ConcreteRequestor(conn);
+		return new ConcreteRequestor((ConcreteConnection) conn);
 	}
 }
