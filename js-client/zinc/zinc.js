@@ -82,31 +82,49 @@ Connection.prototype.sendJson = function(json) {
   this.atmo.push(JSON.stringify(json));
 }
 
-Connection.prototype.processIncoming = function(json) {
-  var msg = JSON.parse(json);
-  if (msg.requestid)
-    this.handlePromise(msg.requestid, msg);
-  if (!msg.subscription)
-    return;
-  var h = this.dispatch[msg.subscription];
-  this.handlePromise(msg.subscription, msg);
-  if (msg.action)
-    h(msg.payload, msg.action);
-  else
-    h(msg.payload, 'replace');
+class Message
+{
+	constructor(value) {
+		this.status = value.status;
+		this.error = value.error;
+		this.payload = value.payload;
+		this.action = value.action || "replace";
+	}
+	
+	beHandled(handler, promiseWasSettled) {
+		handler(this.payload, this.action, promiseWasSettled);
+	}
+	
+	settlePromise(resolve, reject) {
+		if (this.error)
+			reject(new ZincError(this.error));
+		else
+			resolve(this);
+	}
 }
 
-Connection.prototype.handlePromise = function(id, json) {
+Connection.prototype.processIncoming = function(json) {
+  var msg = JSON.parse(json);
+  var message = new Message(msg);
+  var settled = false;
+  if (msg.requestid)
+    settled = this.settlePromise(msg.requestid, message) || settled;
+  if (msg.subscription) {
+    settled = this.settlePromise(msg.subscription, message) || settled;
+    if (this.openSubscriptions[msg.subscription])
+	  message.beHandled(this.dispatch[msg.subscription], settled);
+  }
+}
+
+Connection.prototype.settlePromise = function(id, message) {
   var p = this.promises[id];
-  if (!p)
-    return;
-  if (json.error)
-    p.reject(new ZincError(json.error));
-  else if (json.status)
-    p.resolve(json.status);
+  if (p) {
+    message.settlePromise(p.resolve, p.reject);
+    delete this.promises[id];
+    return true;
+  }
   else
-    p.resolve(null);
-  delete this.promises[id];
+    return false;
 }
   
 function Requestor(conn) {
@@ -131,6 +149,31 @@ Requestor.prototype.invoke = function(resource, handler) {
   var req = new MakeRequest(this.conn, "invoke", handler);
   req.req.resource = resource;
   return req;
+}
+
+Requestor.prototype.cancelAnySubscriptionTo = function(resource) {
+	this.cancelMatchingSubscriptions(function(request) {
+			return request.req.resource === resource;
+		});
+}
+
+Requestor.prototype.cancelAllSubscriptions = function() {
+	this.cancelMatchingSubscriptions(function(request) {
+			return true;
+		});
+}
+
+Requestor.prototype.cancelMatchingSubscriptions = function(predicate) {
+	var requestsToCancel = [];
+    for (var id in self.openSubscriptions)
+		if (self.openSubscriptions.hasOwnProperty(id))
+		{
+			var request = self.openSubscriptions[id];
+			if (predicate(request))
+				requestsToCancel.push(request);
+		}
+	for (var request of requestsToCancel)
+		request.unsubscribe();
 }
 
 Requestor.prototype.disconnect = function() {
