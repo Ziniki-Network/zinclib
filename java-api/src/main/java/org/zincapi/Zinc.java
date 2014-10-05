@@ -12,6 +12,7 @@ import java.util.TreeMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.zincapi.concrete.ConcreteConnection;
 import org.zincapi.concrete.ConcreteHandleRequest;
 import org.zincapi.concrete.ConcreteMakeRequest;
 import org.zincapi.concrete.ConcreteMulticastResponse;
@@ -76,7 +77,7 @@ public class Zinc {
 			else {
 				conn = client.createConnection(uri);
 				conns.put(url, conn);
-				ConcreteMakeRequest mr = new ConcreteMakeRequest(conn, "establish");
+				ConcreteMakeRequest mr = new ConcreteMakeRequest((ConcreteConnection) conn, "establish");
 				mr.setOption("type", idType);
 				mr.setOption("address", idAddress);
 				mr.send();

@@ -18,10 +18,12 @@ import org.zincapi.Requestor;
 import org.zincapi.ResourceHandler;
 import org.zincapi.Response;
 import org.zincapi.Zinc;
+import org.zincapi.ZincException;
 import org.zincapi.ZincInvalidSubscriptionException;
 import org.zincapi.ZincNoResourceHandlerException;
 import org.zincapi.ZincNoSubscriptionException;
 import org.zincapi.jsonapi.Payload;
+import org.zinutils.sync.Promise;
 
 public abstract class ConcreteConnection implements Connection {
 	private final static Logger logger = LoggerFactory.getLogger("Connection");
@@ -30,6 +32,7 @@ public abstract class ConcreteConnection implements Connection {
 	private String remoteURI;
 	private final Map<Integer, MakeRequest> mapping = new TreeMap<Integer, MakeRequest>();
 	private final Map<Integer, Response> subscriptions = new HashMap<Integer, Response>();
+	private final Map<Integer, Promise<String>> pendingPromises = new HashMap<Integer, Promise<String>>();
 
 	public ConcreteConnection(Zinc zinc) {
 		this.zinc = zinc;
@@ -122,13 +125,18 @@ public abstract class ConcreteConnection implements Connection {
 				if (response != null && !response.sent())
 					response.sendStatus(idField, null, err);
 			} else {
-				int sub = json.getInt("subscription");
-				MakeRequest r;
-				synchronized (this) {
-					r = mapping.get(sub);
+				if (json.has("subscription")) {
+					int sub = json.getInt("subscription");
+					handlePromise(sub, json);
+					MakeRequest r;
+					synchronized (this) {
+						r = mapping.get(sub);
+					}
+					if (r != null)
+						((ConcreteMakeRequest)r).handler.response(r, new Payload(json.getJSONObject("payload")));
+				} else if (json.has("requestid")) {
+					handlePromise(json.getInt("requestid"), json);
 				}
-				if (r != null)
-					((ConcreteMakeRequest)r).handler.response(r, new Payload(json.getJSONObject("payload")));
 			}
 		} catch (ZincNoResourceHandlerException ex) {
 			logger.error(ex.getMessage());
@@ -137,6 +145,18 @@ public abstract class ConcreteConnection implements Connection {
 		}
 	}
 	
+	private void handlePromise(int sub, JSONObject json) throws JSONException {
+		if (!pendingPromises.containsKey(sub))
+			return;
+		Promise<String> pp = pendingPromises.remove(sub);
+		if (json.has("error"))
+			pp.failed(new ZincException(json.getString("error")));
+		else if (json.has("status"))
+			pp.completed(json.getString("status"));
+		else
+			pp.completed(null);
+	}
+
 	public void setURI(String address) {
 		remoteURI = address;
 	}
@@ -148,4 +168,10 @@ public abstract class ConcreteConnection implements Connection {
 	public Requestor newRequestor() {
 		return zinc.getClient().requestor(this);
 	}
+	
+	public void pend(int h, Promise<String> ret) {
+		pendingPromises.put(h, ret);
+	}
+
+	public abstract void send(JSONObject asJSON);
 }

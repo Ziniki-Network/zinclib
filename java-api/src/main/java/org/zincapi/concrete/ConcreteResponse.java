@@ -11,13 +11,13 @@ import org.zincapi.ZincBrokenConnectionException;
 import org.zincapi.jsonapi.Payload;
 
 public class ConcreteResponse implements Response {
-	private final Connection oc;
+	private final ConcreteConnection oc;
 	private final int seq;
 	private boolean sentSomething = false;
 	private boolean unsubscribed;
 	private final Set<ConcreteMulticastResponse> multicasters = new HashSet<ConcreteMulticastResponse>();
 
-	public ConcreteResponse(Connection oc, int seq) {
+	public ConcreteResponse(ConcreteConnection oc, int seq) {
 		this.oc = oc;
 		this.seq = seq;
 	}
