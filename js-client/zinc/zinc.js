@@ -165,10 +165,10 @@ Requestor.prototype.cancelAllSubscriptions = function() {
 
 Requestor.prototype.cancelMatchingSubscriptions = function(predicate) {
 	var requestsToCancel = [];
-    for (var id in self.openSubscriptions)
-		if (self.openSubscriptions.hasOwnProperty(id))
+    for (var id in this.conn.openSubscriptions)
+		if (this.conn.openSubscriptions.hasOwnProperty(id))
 		{
-			var request = self.openSubscriptions[id];
+			var request = this.conn.openSubscriptions[id];
 			if (predicate(request))
 				requestsToCancel.push(request);
 		}
