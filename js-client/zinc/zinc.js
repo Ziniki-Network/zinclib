@@ -112,7 +112,9 @@ Connection.prototype.processIncoming = function(json) {
   if (msg.subscription) {
     settled = this.settlePromise(msg.subscription, message) || settled;
     if (this.openSubscriptions[msg.subscription])
-	  message.beHandled(this.dispatch[msg.subscription], settled);
+      message.beHandled(this.dispatch[msg.subscription], settled);
+    else
+      console.log("received via Zinc a message for a subscription this client thinks is closed:  " + json);
   }
 }
 
