@@ -132,8 +132,12 @@ public abstract class ConcreteConnection implements Connection {
 					synchronized (this) {
 						r = mapping.get(sub);
 					}
-					if (r != null)
-						((ConcreteMakeRequest)r).handler.response(r, new Payload(json.getJSONObject("payload")));
+					if (r != null) {
+						if (json.has("payload")) {
+							Payload payload = new Payload(json.getJSONObject("payload"));
+							((ConcreteMakeRequest)r).handler.response(r, payload);
+						}
+					}
 				} else if (json.has("requestid")) {
 					handlePromise(json.getInt("requestid"), json);
 				}
