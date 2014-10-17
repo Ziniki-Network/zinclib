@@ -5,7 +5,9 @@ import org.zincapi.jsonapi.Payload;
 
 public interface Response {
 
-	void send(Payload obj) throws JSONException;
+	void send(String action, Payload payload) throws JSONException;
+
+	void send(Payload payload) throws JSONException;
 
 	void unsubscribed();
 

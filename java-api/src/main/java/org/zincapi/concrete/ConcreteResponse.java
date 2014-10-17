@@ -29,20 +29,31 @@ public class ConcreteResponse implements Response {
 
 	@Override
 	public void send(Payload payload) throws JSONException {
+		send("replace", payload);
+	}
+	
+	@Override
+	public void send(String action, Payload payload) throws JSONException {
 		if (unsubscribed)
 			return;
+
+		if (payload == null)
+			action = "empty";
 		
+		// TODO: should we "validate" the action?  Or is anything OK?
 		try {
 			JSONObject msg = new JSONObject();
 			msg.put("subscription", seq);
-			msg.put("payload", payload.asJSONObject());
+			msg.put("action", action);
+			if (payload != null)
+				msg.put("payload", payload.asJSONObject());
 			oc.send(msg);
 			sentSomething = true;
 		} catch (ZincBrokenConnectionException ex) {
 			unsubscribed();
 		}
 	}
-	
+
 	public void sendStatus(String idField, String status, Object error) throws JSONException {
 		try {
 			JSONObject msg = new JSONObject();
