@@ -34,6 +34,11 @@ public class ConcreteMulticastResponse implements MulticastResponse {
 
 	@Override
 	public void send(Payload payload) throws JSONException {
+		send("replace", payload);
+	}
+
+	@Override
+	public void send(String action, Payload payload) throws JSONException {
 		if (unsubscribed)
 			return;
 		
@@ -42,7 +47,7 @@ public class ConcreteMulticastResponse implements MulticastResponse {
 			tmp = new HashSet<Response>(responses);
 		}
 		for (Response r : tmp) {
-			r.send(payload);
+			r.send(action, payload);
 		}
 	}
 
