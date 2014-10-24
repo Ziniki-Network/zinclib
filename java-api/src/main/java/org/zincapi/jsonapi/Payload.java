@@ -1,9 +1,9 @@
 package org.zincapi.jsonapi;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
+import java.util.List;
 
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -16,7 +16,7 @@ public class Payload {
 	private final boolean creating;
 
 	private final String type;
-	private final Set<PayloadItem> items = new HashSet<PayloadItem>();
+	private final List<PayloadItem> items = new ArrayList<PayloadItem>();
 
 	public Payload(JSONObject jsonObject) throws JSONException {
 		this.creating = false;
