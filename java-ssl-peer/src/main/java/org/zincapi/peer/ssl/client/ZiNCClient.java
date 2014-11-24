@@ -8,7 +8,6 @@ import org.zincapi.Connection;
 import org.zincapi.Requestor;
 import org.zincapi.Zinc;
 import org.zincapi.concrete.ConcreteConnection;
-import org.zincapi.concrete.ConcreteRequestor;
 import org.zincapi.peer.ssl.ZincSSLParticipant;
 import org.zinutils.exceptions.UtilException;
 import org.zinutils.sync.Promise;
@@ -38,7 +37,7 @@ public class ZiNCClient implements Zinc.Client {
 
 	@Override
 	public Requestor requestor(Connection conn) {
-		return new ConcreteRequestor((ConcreteConnection) conn);
+		return ((ConcreteConnection) conn).newRequestor();
 	}
 
 }

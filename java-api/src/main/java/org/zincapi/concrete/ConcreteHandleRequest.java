@@ -3,7 +3,7 @@ package org.zincapi.concrete;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.zincapi.Connection;
+import org.zincapi.Channel;
 import org.zincapi.HandleRequest;
 import org.zincapi.Requestor;
 import org.zincapi.ZincNoResourceParameterException;
@@ -11,14 +11,16 @@ import org.zincapi.jsonapi.Payload;
 
 public class ConcreteHandleRequest implements HandleRequest {
 	private final ConcreteConnection conn;
+	private final Channel channel;
 	private final String method;
 	private String resource;
 	private final Map<String, String> parameters = new TreeMap<String, String>();
 	private final Map<String, Object> options = new TreeMap<String, Object>();
 	private Payload payload;
 
-	public ConcreteHandleRequest(ConcreteConnection conn, String method) {
+	public ConcreteHandleRequest(ConcreteConnection conn, int channel, String method) {
 		this.conn = conn;
+		this.channel = channel <= 0 ? null : conn.getChannel(channel);
 		this.method = method;
 	}
 	
@@ -72,8 +74,8 @@ public class ConcreteHandleRequest implements HandleRequest {
 
 	
 	@Override
-	public Connection getConnection() {
-		return conn;
+	public Channel getChannel() {
+		return channel;
 	}
 
 	@Override

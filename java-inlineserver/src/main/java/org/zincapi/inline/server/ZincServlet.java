@@ -48,6 +48,7 @@ public class ZincServlet extends HttpServlet {
 			AsyncProcessor support = new AsyncProcessor(framework.getAtmosphereConfig());
 			support.morphToTextMessages();
 			framework.setAsyncSupport(support);
+			framework.allowAllClassesScan(false);
 			framework.addAtmosphereHandler("/*", new AtmosphereResponder(zinc));
 	    	framework.init(config);
 		} catch (Exception ex) {

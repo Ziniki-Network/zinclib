@@ -6,14 +6,16 @@ import org.zincapi.ResponseHandler;
 
 public class ConcreteRequestor implements Requestor {
 	private final ConcreteConnection conn;
+	private final int channel;
 
-	public ConcreteRequestor(ConcreteConnection conn) {
+	public ConcreteRequestor(ConcreteConnection conn, int channel) {
 		this.conn = conn;
+		this.channel = channel;
 	}
 
 	@Override
 	public MakeRequest subscribe(String resource, ResponseHandler handler) {
-		ConcreteMakeRequest ret = new ConcreteMakeRequest(conn, "subscribe", handler);
+		ConcreteMakeRequest ret = new ConcreteMakeRequest(conn, channel, "subscribe", handler);
 		ret.requireSubcription();
 		ret.setResource(resource);
 		return ret;
@@ -30,7 +32,7 @@ public class ConcreteRequestor implements Requestor {
 	}
 
 	private MakeRequest requestWithOptionalHandler(String method, String resource, ResponseHandler handler) {
-		ConcreteMakeRequest ret = new ConcreteMakeRequest(conn, method, handler);
+		ConcreteMakeRequest ret = new ConcreteMakeRequest(conn, channel, method, handler);
 		if (handler != null)
 			ret.requireSubcription();
 		ret.setResource(resource);

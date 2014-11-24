@@ -43,7 +43,7 @@ public class IncomingServerConnection extends ConcreteConnection implements Inco
 				String type = opts.getString("type");
 				String address = opts.getString("address");
 				this.setURI(address);
-				HandleRequest hr = new ConcreteHandleRequest(this, m);
+				HandleRequest hr = new ConcreteHandleRequest(this, 0, m);
 				for (ConnectionHandler h : zinc.getConnectionHandlers()) {
 					h.newConnection(hr, type, address);
 				}

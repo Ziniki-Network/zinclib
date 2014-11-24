@@ -12,7 +12,6 @@ import org.zincapi.Connection;
 import org.zincapi.Requestor;
 import org.zincapi.Zinc;
 import org.zincapi.concrete.ConcreteConnection;
-import org.zincapi.concrete.ConcreteRequestor;
 
 public class ZiNCClient implements Zinc.Client {
 	private final Zinc zinc;
@@ -35,6 +34,6 @@ public class ZiNCClient implements Zinc.Client {
 
 	@Override
 	public Requestor requestor(Connection conn) {
-		return new ConcreteRequestor((ConcreteConnection) conn);
+		return ((ConcreteConnection) conn).newRequestor();
 	}
 }

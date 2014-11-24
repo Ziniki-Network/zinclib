@@ -77,7 +77,7 @@ public class Zinc {
 			else {
 				conn = client.createConnection(uri);
 				conns.put(url, conn);
-				ConcreteMakeRequest mr = new ConcreteMakeRequest((ConcreteConnection) conn, "establish");
+				ConcreteMakeRequest mr = new ConcreteMakeRequest((ConcreteConnection) conn, 0, "establish");
 				mr.setOption("type", idType);
 				mr.setOption("address", idAddress);
 				mr.send();

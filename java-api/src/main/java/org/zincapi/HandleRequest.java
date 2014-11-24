@@ -20,7 +20,7 @@ public interface HandleRequest {
 
 	Payload getPayload();
 
-	Connection getConnection();
+	Channel getChannel();
 
 	String getConnectionURI();
 

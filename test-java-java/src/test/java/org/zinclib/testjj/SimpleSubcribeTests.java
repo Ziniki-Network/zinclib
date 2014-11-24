@@ -53,4 +53,24 @@ public class SimpleSubcribeTests extends TestingResponseHandler {
 		assertMessages("hello", "there");
 		throwErrors();
 	}
+
+
+	@Test
+	public void testWeCanCreateTwoIndependentChannelsToTheSameConnection() throws Exception {
+		// set up server
+		TokenResourceHandler resourceHandler = new TokenResourceHandler();
+		zincServer.handleResource("setToken", resourceHandler);
+		zincServer.handleResource("simple", resourceHandler);
+		Zinc client = new Zinc();
+		Requestor req1 = client.newRequestor(URI.create("http://"+addr+"/test"));
+		assertNotNull(req1);
+		Requestor req2 = client.newRequestor(URI.create("http://"+addr+"/test"));
+		assertNotNull(req2);
+		req1.invoke("setToken", null).setOption("token", "81").send();
+		req2.invoke("setToken", null).setOption("token", "92").send();
+		req1.subscribe("simple", this).send();
+		req2.subscribe("simple", this).send();
+		assertMessages("hello 81", "hello 92");
+		throwErrors();
+	}
 }

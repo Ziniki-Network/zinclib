@@ -18,6 +18,7 @@ import org.zinutils.sync.Promise;
 
 public class ConcreteMakeRequest implements MakeRequest {
 	private final ConcreteConnection conn;
+	private final int channel;
 	final ResponseHandler handler;
 	private final String method;
 	private final Map<String,Object> opts = new HashMap<String,Object>();
@@ -25,12 +26,13 @@ public class ConcreteMakeRequest implements MakeRequest {
 	private Integer subscriptionHandle;
 	private JSONObject payload;
 
-	public ConcreteMakeRequest(ConcreteConnection conn, String method) {
-		this(conn, method, null);
+	public ConcreteMakeRequest(ConcreteConnection conn, int channel, String method) {
+		this(conn, channel, method, null);
 	}
 
-	public ConcreteMakeRequest(ConcreteConnection conn, String method, ResponseHandler handler) {
+	public ConcreteMakeRequest(ConcreteConnection conn, int channel, String method, ResponseHandler handler) {
 		this.conn = conn;
+		this.channel = channel;
 		this.method = method;
 		this.handler = handler;
 	}
@@ -110,6 +112,8 @@ public class ConcreteMakeRequest implements MakeRequest {
 		req.put("method", method);
 		if (resource != null)
 			req.put("resource", resource);
+		if (channel > 0)
+			req.put("channel", channel);
 		if (!opts.isEmpty()) {
 			JSONObject options = new JSONObject();
 			req.put("options", options);

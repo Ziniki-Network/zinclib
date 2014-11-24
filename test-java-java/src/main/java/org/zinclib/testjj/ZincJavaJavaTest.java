@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
@@ -35,7 +36,7 @@ public class ZincJavaJavaTest extends Runner {
 		}
 		suite = Description.createSuiteDescription(underTest);
 		for (Method m : underTest.getMethods()) {
-			if (m.getReturnType().equals(Void.TYPE) && m.getParameterCount() == 0 && m.getAnnotation(Test.class) != null) {
+			if (m.getReturnType().equals(Void.TYPE) && m.getParameterCount() == 0 && m.getAnnotation(Test.class) != null && m.getAnnotation(Ignore.class) == null) {
 				TestMethod e = new TestMethod(underTest, m);
 				suite.addChild(e.getDescription());
 				toTest.add(e);

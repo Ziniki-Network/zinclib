@@ -12,6 +12,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.zincapi.Channel;
 import org.zincapi.Connection;
 import org.zincapi.MakeRequest;
 import org.zincapi.Requestor;
@@ -29,8 +30,10 @@ public abstract class ConcreteConnection implements Connection {
 	private final static Logger logger = LoggerFactory.getLogger("Connection");
 	protected final Zinc zinc;
 	private int handle;
+	private int nextChannel = 1;
 	private String remoteURI;
 	private final Map<Integer, MakeRequest> mapping = new TreeMap<Integer, MakeRequest>();
+	private final Map<Integer, ConcreteChannel> channels = new HashMap<Integer, ConcreteChannel>();
 	private final Map<Integer, Response> subscriptions = new HashMap<Integer, Response>();
 	private final Map<Integer, Promise<String>> pendingPromises = new HashMap<Integer, Promise<String>>();
 
@@ -78,7 +81,10 @@ public abstract class ConcreteConnection implements Connection {
 				String resource = null;
 				if (req.has("resource"))
 					resource = req.getString("resource");
-				ConcreteHandleRequest hr = new ConcreteHandleRequest(this, method);
+				int channel = 0;
+				if (req.has("channel"))
+					channel = req.getInt("channel");
+				ConcreteHandleRequest hr = new ConcreteHandleRequest(this, channel, method);
 				ResourceHandler handler = zinc.getHandler(hr, resource);
 				if (req.has("options")) {
 					JSONObject opts = req.getJSONObject("options");
@@ -161,6 +167,12 @@ public abstract class ConcreteConnection implements Connection {
 			pp.completed(null);
 	}
 
+	public Channel getChannel(int channel) {
+		if (!channels.containsKey(channel))
+			channels.put(channel, new ConcreteChannel(this, channel));
+		return channels.get(channel);
+	}
+
 	public void setURI(String address) {
 		remoteURI = address;
 	}
@@ -170,7 +182,7 @@ public abstract class ConcreteConnection implements Connection {
 	}
 
 	public Requestor newRequestor() {
-		return zinc.getClient().requestor(this);
+		return new ConcreteRequestor(this, nextChannel++);
 	}
 	
 	public void pend(int h, Promise<String> ret) {
