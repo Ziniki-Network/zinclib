@@ -54,7 +54,7 @@ public class ZincJavaJavaTest extends Runner {
 
 		server.notify(new NotifyOnServerReady() {
 			@Override
-			public void serverReady(final InlineServer server, final Endpoint addr) {
+			public void serverReady(final InlineServer server, String scheme, final Endpoint addr) {
 				Thread thr = new Thread() {
 					public void run() {
 						try {

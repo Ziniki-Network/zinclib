@@ -39,6 +39,7 @@ public class AtmosphereResponder implements AtmosphereHandler {
 			// initiating the channel
 			resource.suspend();
 			synchronized (pending) {
+				logger.info("Creating new atmosphere connection for session " + session);
 				pending.put(session, new ServerConnection(zinc, resource.getResponse()));
 			}
 		}

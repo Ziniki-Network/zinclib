@@ -10,9 +10,9 @@ var zincConfig = {
 export {zincConfig as config};
 
 function ZincError(message) {
-    this.name = "ZincError";
-    this.message = message;
-    this.stack = (new Error()).stack;
+  this.name = "ZincError";
+  this.message = message;
+  this.stack = (new Error()).stack;
 }
 ZincError.prototype = new Error();
 
@@ -84,23 +84,27 @@ Connection.prototype.sendJson = function(json) {
 
 class Message
 {
-	constructor(value) {
-		this.status = value.status;
-		this.error = value.error;
-		this.payload = value.payload;
-		this.action = value.action || "replace";
-	}
-	
-	beHandled(handler, promiseWasSettled) {
-		handler(this.payload, this.action, promiseWasSettled);
-	}
-	
-	settlePromise(resolve, reject) {
-		if (this.error)
-			reject(new ZincError(this.error));
-		else
-			resolve(this);
-	}
+  constructor(value) {
+    this.status = value.status;
+    this.error = value.error;
+    this.payload = value.payload;
+    this.action = value.action || "replace";
+  }
+
+  beHandled(handler, promiseWasSettled) {
+    if (this.error) {
+      console.log(this.error);
+      return;
+    }
+    handler(this.payload, this.action, promiseWasSettled);
+  }
+
+  settlePromise(resolve, reject) {
+    if (this.error)
+      reject(new ZincError(this.error));
+    else
+      resolve(this);
+  }
 }
 
 Connection.prototype.processIncoming = function(json) {
@@ -128,7 +132,7 @@ Connection.prototype.settlePromise = function(id, message) {
   else
     return false;
 }
-  
+
 function Requestor(conn) {
   this.conn = conn;
 }
@@ -154,28 +158,28 @@ Requestor.prototype.invoke = function(resource, handler) {
 }
 
 Requestor.prototype.cancelAnySubscriptionTo = function(resource) {
-	this.cancelMatchingSubscriptions(function(request) {
-			return request.req.resource === resource;
-		});
+  this.cancelMatchingSubscriptions(function(request) {
+    return request.req.resource === resource;
+  });
 }
 
 Requestor.prototype.cancelAllSubscriptions = function() {
-	this.cancelMatchingSubscriptions(function(request) {
-			return true;
-		});
+  this.cancelMatchingSubscriptions(function(request) {
+    return true;
+  });
 }
 
 Requestor.prototype.cancelMatchingSubscriptions = function(predicate) {
-	var requestsToCancel = [];
-    for (var id in this.conn.openSubscriptions)
-		if (this.conn.openSubscriptions.hasOwnProperty(id))
-		{
-			var request = this.conn.openSubscriptions[id];
-			if (predicate(request))
-				requestsToCancel.push(request);
-		}
-	for (var request of requestsToCancel)
-		request.unsubscribe();
+  var requestsToCancel = [];
+  for (var id in this.conn.openSubscriptions)
+    if (this.conn.openSubscriptions.hasOwnProperty(id))
+    {
+      var request = this.conn.openSubscriptions[id];
+      if (predicate(request))
+        requestsToCancel.push(request);
+    }
+  for (var request of requestsToCancel)
+    request.unsubscribe();
 }
 
 Requestor.prototype.disconnect = function() {

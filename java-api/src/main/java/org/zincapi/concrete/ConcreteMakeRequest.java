@@ -8,6 +8,8 @@ import java.util.Map.Entry;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zincapi.MakeRequest;
 import org.zincapi.ResponseHandler;
 import org.zincapi.ZincCannotSetPayloadException;
@@ -17,6 +19,7 @@ import org.zincapi.jsonapi.Payload;
 import org.zinutils.sync.Promise;
 
 public class ConcreteMakeRequest implements MakeRequest {
+	private final static Logger logger = LoggerFactory.getLogger("ConcreteMakeRequest");
 	private final ConcreteConnection conn;
 	private final int channel;
 	final ResponseHandler handler;
@@ -84,7 +87,9 @@ public class ConcreteMakeRequest implements MakeRequest {
 	public Promise<String> send() {
 		Promise<String> ret = new Promise<String>();
 		try {
-			conn.send(asJSON(ret));
+			JSONObject msg = asJSON(ret);
+			logger.info("Sending message " + msg);
+			conn.send(msg);
 		} catch (Exception ex) {
 			throw ZincException.wrap(ex);
 		}

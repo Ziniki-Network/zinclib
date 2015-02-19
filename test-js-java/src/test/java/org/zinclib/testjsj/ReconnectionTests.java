@@ -49,7 +49,7 @@ public class ReconnectionTests {
 		rhino.wait("did not obtain a connection", 1000, "messages.length == 1.0");
 		server.notify(new NotifyOnServerReady() {
 			@Override
-			public void serverReady(InlineServer inlineServer, Endpoint addr) {
+			public void serverReady(InlineServer inlineServer, String scheme, Endpoint addr) {
 				ZincServlet zs = (ZincServlet) server.servletFor("/test").getImpl();
 				Zinc zincServer = zs.getZinc();
 				zincServer.handleResource("test", resourceHandler);

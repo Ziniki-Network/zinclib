@@ -12,11 +12,14 @@ import org.atmosphere.cpr.AsyncSupport;
 import org.atmosphere.cpr.AtmosphereFramework;
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zincapi.Zinc;
 import org.zinutils.reflection.Reflection;
 
 @SuppressWarnings("serial")
 public class ZincServlet extends HttpServlet {
+	private final Logger logger = LoggerFactory.getLogger("ZincServlet");
     private final AtmosphereFramework framework;
 	private final Zinc zinc;
 	private Object global;
@@ -56,6 +59,14 @@ public class ZincServlet extends HttpServlet {
 		} catch (Exception ex) {
 			throw new ServletException(ex);
 		}
+    }
+    
+    @Override
+    public void destroy() {
+    	logger.warn("ZincServlet.destroy() has been called");
+    	zinc.close();
+    	framework.destroy();
+    	super.destroy();
     }
     
     @Override
