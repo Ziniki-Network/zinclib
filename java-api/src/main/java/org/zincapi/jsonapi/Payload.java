@@ -9,14 +9,17 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.zincapi.ZincInvalidPayloadException;
+import org.zincapi.ZincInvalidSideloadException;
 import org.zincapi.ZincNotSingletonException;
 import org.zincapi.ZincPayloadReadonlyException;
+import org.zinutils.collections.ListMap;
 
 public class Payload {
 	private final boolean creating;
 
 	private final String type;
 	private final List<PayloadItem> items = new ArrayList<PayloadItem>();
+	private final ListMap<String, PayloadItem> sideload = new ListMap<String, PayloadItem>();
 
 	public Payload(JSONObject jsonObject) throws JSONException {
 		this.creating = false;
@@ -25,13 +28,21 @@ public class Payload {
 		String ty = null;
 		while (it.hasNext()) {
 			String s = it.next();
-			// TODO: handle meta, links and linked
-			// else {
-			ty = s;
-			JSONArray objs = jsonObject.getJSONArray(s);
-			for (int i=0;i<objs.length();i++)
-				items.add(new PayloadItem(objs.getJSONObject(i)));
-			// }
+			if (s.equals("_main")) {
+				if (ty != null)
+					throw new ZincInvalidPayloadException();
+				ty = jsonObject.getString(s);
+			} else {
+				JSONArray objs = jsonObject.getJSONArray(s);
+				if (ty == null) {
+					ty = s;
+					for (int i=0;i<objs.length();i++)
+						items.add(new PayloadItem(objs.getJSONObject(i)));
+				} else {
+					for (int i=0;i<objs.length();i++)
+						sideload.add(s, new PayloadItem(objs.getJSONObject(i)));
+				}
+			}
 		}
 		if (ty == null)
 			throw new ZincInvalidPayloadException();
@@ -48,6 +59,16 @@ public class Payload {
 			throw new ZincPayloadReadonlyException();
 		PayloadItem ret = new PayloadItem(this, type);
 		items.add(ret);
+		return ret;
+	}
+
+	public PayloadItem sideload(String sltype) {
+		if (!creating)
+			throw new ZincPayloadReadonlyException();
+		if (sltype == null || sltype.equals(type))
+			throw new ZincInvalidSideloadException(sltype, type);
+		PayloadItem ret = new PayloadItem(this, sltype);
+		sideload.add(sltype, ret);
 		return ret;
 	}
 
@@ -74,14 +95,30 @@ public class Payload {
 
 	public JSONObject asJSONObject() throws JSONException {
 		JSONObject ret = new JSONObject();
+		if (!sideload.isEmpty())
+			ret.put("_main", type);
 		JSONArray mainArray = new JSONArray();
 		ret.put(type, mainArray);
 		for (PayloadItem pi : items)
 			mainArray.put(pi.asJSONObject());
+		for (String s : sideload) {
+			JSONArray sideArray = new JSONArray();
+			ret.put(s, sideArray);
+			for (PayloadItem pi : sideload.get(s))
+				sideArray.put(pi.asJSONObject());
+		}
 		return ret;
 	}
 
 	public Collection<PayloadItem> items() {
 		return items;
+	}
+	
+	public Collection<String> sideloads() {
+		return sideload.keySet();
+	}
+	
+	public Collection<PayloadItem> sideloaded(String oftype) {
+		return sideload.get(oftype);
 	}
 }

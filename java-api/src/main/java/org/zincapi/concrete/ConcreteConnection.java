@@ -24,6 +24,7 @@ import org.zincapi.ZincInvalidSubscriptionException;
 import org.zincapi.ZincNoResourceHandlerException;
 import org.zincapi.ZincNoSubscriptionException;
 import org.zincapi.jsonapi.Payload;
+import org.zinutils.exceptions.UtilException;
 import org.zinutils.sync.Promise;
 
 public abstract class ConcreteConnection implements Connection {
@@ -86,6 +87,8 @@ public abstract class ConcreteConnection implements Connection {
 					channel = req.getInt("channel");
 				ConcreteHandleRequest hr = new ConcreteHandleRequest(this, channel, method);
 				ResourceHandler handler = zinc.getHandler(hr, resource);
+				if (handler == null)
+					throw new ZincException("There is no handler for " + resource);
 				if (req.has("options")) {
 					JSONObject opts = req.getJSONObject("options");
 					@SuppressWarnings("unchecked")
@@ -107,27 +110,28 @@ public abstract class ConcreteConnection implements Connection {
 					hr.setPayload(new Payload(json.getJSONObject("payload")));
 				Integer replyTo = null;
 				String idField = null;
-				Exception err = null;
+				Throwable err = null;
 				ConcreteResponse response = null;
 				try {
 					// May need more than this if we have a "subscription"
 					if (json.has("subscription")) {
 						int sub = json.getInt("subscription");
 						replyTo = sub;
-						response = new ConcreteResponse(this, sub);
+						response = new ConcreteResponse(this, true, sub);
 						idField = "subscription";
 						subscriptions.put(sub, response);
 					} else if (json.has("requestid")) {
 						replyTo = json.getInt("requestid");
 						idField = "requestid";
+						response = new ConcreteResponse(this, false, replyTo);
 					}
 					handler.handle(hr, response);
 				} catch (Exception ex) {
-					err = ex;
-					ex.printStackTrace();
+					err = UtilException.unwrap(ex);
+					logger.error("Encountered exception", err);
 				}
 				if (response == null && replyTo != null)
-					response = new ConcreteResponse(this, replyTo);
+					response = new ConcreteResponse(this, false, replyTo);
 				if (response != null && !response.sent())
 					response.sendStatus(idField, null, err);
 			} else {

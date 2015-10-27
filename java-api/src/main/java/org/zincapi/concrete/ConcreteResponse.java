@@ -12,13 +12,15 @@ import org.zincapi.jsonapi.Payload;
 
 public class ConcreteResponse implements Response {
 	private final ConcreteConnection oc;
+	private final boolean subscribe;
 	private final int seq;
 	private boolean sentSomething = false;
 	private boolean unsubscribed;
 	private final Set<ConcreteMulticastResponse> multicasters = new HashSet<ConcreteMulticastResponse>();
 
-	public ConcreteResponse(ConcreteConnection oc, int seq) {
+	public ConcreteResponse(ConcreteConnection oc, boolean subscribe, int seq) {
 		this.oc = oc;
+		this.subscribe = subscribe;
 		this.seq = seq;
 	}
 
@@ -29,7 +31,10 @@ public class ConcreteResponse implements Response {
 
 	@Override
 	public void send(Payload payload) throws JSONException {
-		send("replace", payload);
+		if (subscribe)
+			send("replace", payload);
+		else
+			send(null, payload);
 	}
 	
 	@Override
@@ -43,8 +48,12 @@ public class ConcreteResponse implements Response {
 		// TODO: should we "validate" the action?  Or is anything OK?
 		try {
 			JSONObject msg = new JSONObject();
-			msg.put("subscription", seq);
-			msg.put("action", action);
+			if (subscribe)
+				msg.put("subscription", seq);
+			else
+				msg.put("requestid", seq);
+			if (action != null)
+				msg.put("action", action);
 			if (payload != null)
 				msg.put("payload", payload.asJSONObject());
 			oc.send(msg);
