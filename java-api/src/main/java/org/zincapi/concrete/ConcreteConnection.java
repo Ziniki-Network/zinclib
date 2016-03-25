@@ -25,7 +25,6 @@ import org.zincapi.ZincNoResourceHandlerException;
 import org.zincapi.ZincNoSubscriptionException;
 import org.zincapi.jsonapi.Payload;
 import org.zinutils.exceptions.UtilException;
-import org.zinutils.sync.Promise;
 
 public abstract class ConcreteConnection implements Connection {
 	private final static Logger logger = LoggerFactory.getLogger("Connection");
@@ -36,7 +35,7 @@ public abstract class ConcreteConnection implements Connection {
 	private final Map<Integer, MakeRequest> mapping = new TreeMap<Integer, MakeRequest>();
 	private final Map<Integer, ConcreteChannel> channels = new HashMap<Integer, ConcreteChannel>();
 	private final Map<Integer, Response> subscriptions = new HashMap<Integer, Response>();
-	private final Map<Integer, Promise<String>> pendingPromises = new HashMap<Integer, Promise<String>>();
+	private final Map<Integer, Object> pendingPromises = new HashMap<Integer, Object>();
 
 	public ConcreteConnection(Zinc zinc) {
 		this.zinc = zinc;
@@ -146,6 +145,8 @@ public abstract class ConcreteConnection implements Connection {
 						if (json.has("payload")) {
 							Payload payload = new Payload(json.getJSONObject("payload"));
 							((ConcreteMakeRequest)r).handler.response(r, payload);
+						} else if (json.has("error")) {
+							((ConcreteMakeRequest)r).handler.error(r, json.getString("error"));
 						}
 					}
 				} else if (json.has("requestid")) {
@@ -162,13 +163,15 @@ public abstract class ConcreteConnection implements Connection {
 	private void handlePromise(int sub, JSONObject json) throws JSONException {
 		if (!pendingPromises.containsKey(sub))
 			return;
-		Promise<String> pp = pendingPromises.remove(sub);
+		/* Promise<String> pp = */ pendingPromises.remove(sub);
+		/*
 		if (json.has("error"))
 			pp.failed(new ZincException(json.getString("error")));
 		else if (json.has("status"))
 			pp.completed(json.getString("status"));
 		else
 			pp.completed(null);
+			*/
 	}
 
 	public Channel getChannel(int channel) {
@@ -189,8 +192,8 @@ public abstract class ConcreteConnection implements Connection {
 		return new ConcreteRequestor(this, nextChannel++);
 	}
 	
-	public void pend(int h, Promise<String> ret) {
-		pendingPromises.put(h, ret);
+	public void pend(int h, Object promise) {
+		pendingPromises.put(h, promise);
 	}
 
 	public abstract void send(JSONObject asJSON);

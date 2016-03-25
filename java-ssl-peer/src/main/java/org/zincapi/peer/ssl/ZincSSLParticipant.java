@@ -15,8 +15,8 @@ import javax.net.ssl.SSLSession;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.zincapi.peer.ssl.client.SSLFuture;
 import org.zinutils.exceptions.UtilException;
-import org.zinutils.sync.Promise;
 
 public class ZincSSLParticipant implements ZincSSLReadSelected, ZincSSLWriteSelected, ZincSSLConnectSelected {
 	public static class BufferEntry {
@@ -48,7 +48,7 @@ public class ZincSSLParticipant implements ZincSSLReadSelected, ZincSSLWriteSele
     protected ByteBuffer in;        // read side of clientEngine
     protected ByteBuffer trans;     // "reliable" transport client->server
 	protected ByteBuffer intrans;
-	Promise<ZincSSLParticipant> onComplete;
+	SSLFuture onComplete;
 
     enum MyStat {
     	DONE,

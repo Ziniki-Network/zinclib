@@ -26,9 +26,9 @@ import org.zincapi.Requestor;
 import org.zincapi.Zinc;
 import org.zincapi.ZincException;
 import org.zincapi.peer.ssl.ZincSSLParticipant.MyStat;
+import org.zincapi.peer.ssl.client.SSLFuture;
 import org.zincapi.peer.ssl.client.ZincSSL;
 import org.zinutils.exceptions.UtilException;
-import org.zinutils.sync.Promise;
 import org.zinutils.sync.SyncUtils;
 
 public class ZincSSLPeerManager implements Runnable, ZincSSLAcceptSelected {
@@ -193,7 +193,7 @@ public class ZincSSLPeerManager implements Runnable, ZincSSLAcceptSelected {
 		sel.wakeup();
 	}
 
-	public void connectTo(SocketAddress addr, Promise<ZincSSLParticipant> ret) throws Exception {
+	public void connectTo(SocketAddress addr, SSLFuture ret) throws Exception {
         SocketChannel c = SocketChannel.open();
         c.configureBlocking(false);
         ZincSSLParticipant cli = new ZincSSLParticipant(this, c, false);

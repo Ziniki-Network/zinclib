@@ -16,7 +16,6 @@ import org.zincapi.ZincCannotSetPayloadException;
 import org.zincapi.ZincException;
 import org.zincapi.ZincNoSubscriptionException;
 import org.zincapi.jsonapi.Payload;
-import org.zinutils.sync.Promise;
 
 public class ConcreteMakeRequest implements MakeRequest {
 	private final static Logger logger = LoggerFactory.getLogger("ConcreteMakeRequest");
@@ -84,16 +83,14 @@ public class ConcreteMakeRequest implements MakeRequest {
 	}
 
 	@Override
-	public Promise<String> send() {
-		Promise<String> ret = new Promise<String>();
+	public void send() {
 		try {
-			JSONObject msg = asJSON(ret);
+			JSONObject msg = asJSON();
 			logger.info("Sending message " + msg);
 			conn.send(msg);
 		} catch (Exception ex) {
 			throw ZincException.wrap(ex);
 		}
-		return ret;
 	}
 	
 	@Override
@@ -112,7 +109,7 @@ public class ConcreteMakeRequest implements MakeRequest {
 		}
 	}
 
-	private JSONObject asJSON(Promise<String> ret) throws JSONException {
+	private JSONObject asJSON() throws JSONException {
 		JSONObject req = new JSONObject();
 		req.put("method", method);
 		if (resource != null)
@@ -145,7 +142,7 @@ public class ConcreteMakeRequest implements MakeRequest {
 			h = conn.nextHandle(this);
 			obj.put("requestId", h);
 		}
-		conn.pend(h, ret);
+		conn.pend(h, null);
 		obj.put("request", req);
 		if (payload != null)
 			obj.put("payload", payload);
