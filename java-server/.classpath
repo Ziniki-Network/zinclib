@@ -12,6 +12,5 @@
 	<classpathentry exported="true" kind="lib" path="libs/servlet-api.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/slf4j-api-1.7.6.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/atmosphere-runtime-2.2.0.jar"/>
-	<classpathentry kind="src" path="/Utils"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

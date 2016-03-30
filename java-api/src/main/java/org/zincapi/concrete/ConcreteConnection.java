@@ -61,6 +61,25 @@ public abstract class ConcreteConnection implements Connection {
 	protected void handleMessage(JSONObject json) {
 		try {
 			if (json.has("request")) {
+				Integer replyTo;
+				String idField;
+				ConcreteResponse response;
+				// May need more than this if we have a "subscription"
+				if (json.has("subscription")) {
+					int sub = json.getInt("subscription");
+					replyTo = sub;
+					idField = "subscription";
+					response = new ConcreteResponse(this, true, sub);
+					subscriptions.put(sub, response);
+				} else if (json.has("requestid")) {
+					replyTo = json.getInt("requestid");
+					idField = "requestid";
+					response = new ConcreteResponse(this, false, replyTo);
+				} else {
+					replyTo = null;
+					idField = null;
+					response = null;
+				}
 				JSONObject req = json.getJSONObject("request");
 				String method = req.getString("method");
 				if (method.equals("unsubscribe")) {
@@ -86,8 +105,14 @@ public abstract class ConcreteConnection implements Connection {
 					channel = req.getInt("channel");
 				ConcreteHandleRequest hr = new ConcreteHandleRequest(this, channel, method);
 				ResourceHandler handler = zinc.getHandler(hr, resource);
-				if (handler == null)
-					throw new ZincException("There is no handler for " + resource);
+				if (handler == null) {
+					logger.error("Request for " + resource + " received; there is no handler for that");
+					ConcreteResponse rs = response;
+					if (response == null)
+						rs = new ConcreteResponse(ConcreteConnection.this, false, replyTo);
+					rs.sendStatus(idField, null, "There is no handler for " + resource);
+					return;
+				}
 				if (req.has("options")) {
 					JSONObject opts = req.getJSONObject("options");
 					@SuppressWarnings("unchecked")
@@ -107,32 +132,26 @@ public abstract class ConcreteConnection implements Connection {
 				}
 				if (json.has("payload"))
 					hr.setPayload(new Payload(json.getJSONObject("payload")));
-				Integer replyTo = null;
-				String idField = null;
-				Throwable err = null;
-				ConcreteResponse response = null;
-				try {
-					// May need more than this if we have a "subscription"
-					if (json.has("subscription")) {
-						int sub = json.getInt("subscription");
-						replyTo = sub;
-						response = new ConcreteResponse(this, true, sub);
-						idField = "subscription";
-						subscriptions.put(sub, response);
-					} else if (json.has("requestid")) {
-						replyTo = json.getInt("requestid");
-						idField = "requestid";
-						response = new ConcreteResponse(this, false, replyTo);
+				zinc.submit(new Runnable() {
+					public void run() {
+						Throwable err = null;
+						try {
+							handler.handle(hr, response);
+						} catch (Exception ex) {
+							err = UtilException.unwrap(ex);
+							logger.error("Encountered exception", err);
+						}
+						ConcreteResponse rs2 = response;
+						if (rs2 == null && replyTo != null)
+							rs2 = new ConcreteResponse(ConcreteConnection.this, false, replyTo);
+						if (rs2 != null && !rs2.sent())
+							try {
+								rs2.sendStatus(idField, null, err);
+							} catch (Exception ex) {
+								logger.error("Error sending status", ex);
+							}
 					}
-					handler.handle(hr, response);
-				} catch (Exception ex) {
-					err = UtilException.unwrap(ex);
-					logger.error("Encountered exception", err);
-				}
-				if (response == null && replyTo != null)
-					response = new ConcreteResponse(this, false, replyTo);
-				if (response != null && !response.sent())
-					response.sendStatus(idField, null, err);
+				});
 			} else {
 				if (json.has("subscription")) {
 					int sub = json.getInt("subscription");
@@ -142,12 +161,21 @@ public abstract class ConcreteConnection implements Connection {
 						r = mapping.get(sub);
 					}
 					if (r != null) {
-						if (json.has("payload")) {
-							Payload payload = new Payload(json.getJSONObject("payload"));
-							((ConcreteMakeRequest)r).handler.response(r, payload);
-						} else if (json.has("error")) {
-							((ConcreteMakeRequest)r).handler.error(r, json.getString("error"));
-						}
+						zinc.submit(new Runnable() {
+							@Override
+							public void run() {
+								try {
+									if (json.has("payload")) {
+										Payload payload = new Payload(json.getJSONObject("payload"));
+										((ConcreteMakeRequest)r).handler.response(r, payload);
+									} else if (json.has("error")) {
+										((ConcreteMakeRequest)r).handler.error(r, json.getString("error"));
+									}
+								} catch (Exception ex) {
+									logger.error("Error handling subscription", ex);
+								}
+							}
+						});
 					}
 				} else if (json.has("requestid")) {
 					handlePromise(json.getInt("requestid"), json);

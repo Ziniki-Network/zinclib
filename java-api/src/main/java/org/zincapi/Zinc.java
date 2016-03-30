@@ -17,6 +17,7 @@ import org.zincapi.concrete.ConcreteHandleRequest;
 import org.zincapi.concrete.ConcreteMakeRequest;
 import org.zincapi.concrete.ConcreteMulticastResponse;
 import org.zincapi.concrete.SegmentHandler;
+import org.zinutils.sync.ThreadPool;
 
 public class Zinc {
 	private static final Logger logger = LoggerFactory.getLogger("Zinc");
@@ -29,6 +30,7 @@ public class Zinc {
 	private final Set<ConnectionHandler> newConnectionListeners = new HashSet<ConnectionHandler>();
 	private String idType = "client";
 	private String idAddress;
+	private ThreadPool pool = new ThreadPool(10);
 
 	public Zinc() {
 		this("org.zincapi.client.ZiNCClient", "org.zincapi.server.ZiNCServer");
@@ -144,7 +146,7 @@ public class Zinc {
 	public ResourceHandler getHandler(ConcreteHandleRequest hr, String resource) {
 		hr.setResource(resource);
 		if (resource != null) { 
-			String[] segments = resource.split("/");
+			String[] segments = resource.split("/", -1);
 			List<MatchState> curr = new ArrayList<MatchState>();
 			curr.add(new MatchState(handlers));
 			for (String seg : segments) {
@@ -173,6 +175,10 @@ public class Zinc {
 		throw new ZincNoResourceHandlerException(resource);
 	}
 
+	public void submit(Runnable r) {
+		pool.run(r);
+	}
+	
 	public void close() {
 		for (Connection c : conns.values())
 			c.close();
