@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -35,8 +36,12 @@ public class ZincJavaJavaTest extends Runner {
 			throw new AssertionError("Cannot create " + underTest.getName() + " because it does not have a constructor for (InlineServer, Endpoint, Zinc)");
 		}
 		suite = Description.createSuiteDescription(underTest);
+		String pattern = System.getProperty("org.zinclib.pattern");
+		Pattern p = null;
+		if (pattern != null)
+			p = Pattern.compile(pattern);
 		for (Method m : underTest.getMethods()) {
-			if (m.getReturnType().equals(Void.TYPE) && m.getParameterCount() == 0 && m.getAnnotation(Test.class) != null && m.getAnnotation(Ignore.class) == null) {
+			if (m.getReturnType().equals(Void.TYPE) && m.getParameterCount() == 0 && m.getAnnotation(Test.class) != null && m.getAnnotation(Ignore.class) == null && (p == null || p.matcher(m.getName()).find())) {
 				TestMethod e = new TestMethod(underTest, m);
 				suite.addChild(e.getDescription());
 				toTest.add(e);
@@ -46,7 +51,7 @@ public class ZincJavaJavaTest extends Runner {
 	
 	protected void go(final Method method) throws Throwable
 	{
-		InlineServer server = new InlineServer(8480, "org.zincapi.inline.server.ZincServlet");
+		InlineServer server = new InlineServer(8480, "org.zincapi.inline.server.ZincServlet$ServerOnly");
 		ISServletDefn servlet = server.getBaseServlet();
 		servlet.initParam("org.atmosphere.cpr.sessionSupport", "true");
 //		servlet.initParam("org.zincapi.server.init", "org.zincapi.chirpy.server.Main");

@@ -20,6 +20,8 @@ import org.zincapi.concrete.SegmentHandler;
 import org.zinutils.sync.ThreadPool;
 
 public class Zinc {
+	public static final String DEFAULT_CLIENT = "org.zincapi.client.ZiNCClient";
+	public static final String DEFAULT_SERVER = "org.zincapi.server.ZiNCServer";
 	private static final Logger logger = LoggerFactory.getLogger("Zinc");
 	private final Client client; 
 	private final Server server; 
@@ -33,10 +35,11 @@ public class Zinc {
 	private ThreadPool pool = new ThreadPool(10);
 
 	public Zinc() {
-		this("org.zincapi.client.ZiNCClient", "org.zincapi.server.ZiNCServer");
+		this(DEFAULT_CLIENT, DEFAULT_SERVER);
 	}
 	
 	public Zinc(String cliClass, String servClass) {
+		if (cliClass != null)
 		{
 			Client c = null;
 			try {
@@ -48,6 +51,9 @@ public class Zinc {
 			}
 			client = c;
 		}
+		else
+			client = null;
+		if (servClass != null)
 		{
 			Server s = null;
 			try {
@@ -59,6 +65,8 @@ public class Zinc {
 			}
 			server = s;
 		}
+		else
+			server = null;
 	}
 	
 	public void setIdentity(String type, String address) {
@@ -69,15 +77,20 @@ public class Zinc {
 	}
 	
 	public Requestor newRequestor(URI uri) {
+		return newRequestor(uri, null);
+	}
+	
+	public Requestor newRequestor(URI uri, LifecycleHandler lifecycleHandler) {
 		try {
 			if (client == null)
 				throw new ZincNoClientException();
 			String url = uri.toString();
 			Connection conn;
-			if (conns.containsKey(url))
+			if (conns.containsKey(url)) {
 				conn = conns.get(url);
-			else {
-				conn = client.createConnection(uri);
+				((ConcreteConnection)conn).addLifecycleHandler(lifecycleHandler);
+			} else {
+				conn = client.createConnection(uri, lifecycleHandler);
 				conns.put(url, conn);
 				ConcreteMakeRequest mr = new ConcreteMakeRequest((ConcreteConnection) conn, 0, "establish");
 				mr.setOption("type", idType);
@@ -185,7 +198,7 @@ public class Zinc {
 	}
 
 	public interface Client {
-		Connection createConnection(URI url) throws IOException;
+		Connection createConnection(URI url, LifecycleHandler lifecycleHandler) throws IOException;
 		Requestor requestor(Connection conn);
 	}
 

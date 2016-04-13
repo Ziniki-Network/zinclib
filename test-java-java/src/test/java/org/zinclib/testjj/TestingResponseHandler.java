@@ -30,12 +30,18 @@ public class TestingResponseHandler implements ResponseHandler {
 
 	protected void assertMessages(String... strings) {
 		synchronized (responses) {
-			Date d = new Date(new Date().getTime()+100);
+			Date d = new Date(new Date().getTime()+1000);
 			while (d.after(new Date()) && responses.size() != strings.length)
 				SyncUtils.waitUntil(responses, d);
 			assertEquals("Incorrect number of responses seen", strings.length, responses.size());
 			for (int i=0;i<strings.length;i++)
 				assertEquals("Incorrect response " + i, strings[i], responses.get(i));
 		}
+	}
+
+	@Override
+	public void error(MakeRequest req, String msg) {
+		System.out.println("Error reported to hander for request: " + req);
+		System.out.println(msg);
 	}
 }

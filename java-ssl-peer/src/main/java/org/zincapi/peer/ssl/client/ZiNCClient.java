@@ -6,6 +6,7 @@ import java.net.URI;
 import java.util.concurrent.Future;
 
 import org.zincapi.Connection;
+import org.zincapi.LifecycleHandler;
 import org.zincapi.Requestor;
 import org.zincapi.Zinc;
 import org.zincapi.concrete.ConcreteConnection;
@@ -20,7 +21,7 @@ public class ZiNCClient implements Zinc.Client {
 	}
 	
 	@Override
-	public Connection createConnection(URI url) throws IOException {
+	public Connection createConnection(URI url, LifecycleHandler lifecycleHandler) throws IOException {
 		String host = url.getHost();
 		int port = url.getPort();
 		Future<ZincSSLParticipant> client = zinc.createClient(new InetSocketAddress(host, port));

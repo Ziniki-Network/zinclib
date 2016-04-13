@@ -26,6 +26,11 @@ public class ZincServlet extends HttpServlet {
 		framework = new AtmosphereFramework(false, false);
     }
 
+	public ZincServlet(String srvClass) {
+		zinc = new Zinc(null, srvClass);
+		framework = new AtmosphereFramework(false, false);
+    }
+
 	public Zinc getZinc() {
 		return zinc;
 	}
@@ -71,5 +76,11 @@ public class ZincServlet extends HttpServlet {
 		AtmosphereResponse.Builder builder = new AtmosphereResponse.Builder();
 		AtmosphereResponse aresp = builder.response(resp).request(areq).build();
 		framework.doCometSupport(areq, aresp);
+	}
+	
+	public static class ServerOnly extends ZincServlet {
+		public ServerOnly() {
+			super(Zinc.DEFAULT_SERVER);
+		}
 	}
 }

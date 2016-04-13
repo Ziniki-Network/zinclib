@@ -14,12 +14,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zincapi.Channel;
 import org.zincapi.Connection;
+import org.zincapi.LifecycleHandler;
 import org.zincapi.MakeRequest;
 import org.zincapi.Requestor;
 import org.zincapi.ResourceHandler;
 import org.zincapi.Response;
 import org.zincapi.Zinc;
-import org.zincapi.ZincException;
 import org.zincapi.ZincInvalidSubscriptionException;
 import org.zincapi.ZincNoResourceHandlerException;
 import org.zincapi.ZincNoSubscriptionException;
@@ -36,9 +36,16 @@ public abstract class ConcreteConnection implements Connection {
 	private final Map<Integer, ConcreteChannel> channels = new HashMap<Integer, ConcreteChannel>();
 	private final Map<Integer, Response> subscriptions = new HashMap<Integer, Response>();
 	private final Map<Integer, Object> pendingPromises = new HashMap<Integer, Object>();
+	protected final List<LifecycleHandler> lcHandlers = new ArrayList<LifecycleHandler>();
 
 	public ConcreteConnection(Zinc zinc) {
 		this.zinc = zinc;
+	}
+
+	public void addLifecycleHandler(LifecycleHandler handler) {
+		if (handler == null)
+			return;
+		this.lcHandlers.add(handler);
 	}
 
 	@Override
@@ -58,12 +65,12 @@ public abstract class ConcreteConnection implements Connection {
 		}
 	}
 
-	protected void handleMessage(JSONObject json) {
+	protected void handleMessage(final JSONObject json) {
 		try {
 			if (json.has("request")) {
-				Integer replyTo;
-				String idField;
-				ConcreteResponse response;
+				final Integer replyTo;
+				final String idField;
+				final ConcreteResponse response;
 				// May need more than this if we have a "subscription"
 				if (json.has("subscription")) {
 					int sub = json.getInt("subscription");
@@ -103,8 +110,8 @@ public abstract class ConcreteConnection implements Connection {
 				int channel = 0;
 				if (req.has("channel"))
 					channel = req.getInt("channel");
-				ConcreteHandleRequest hr = new ConcreteHandleRequest(this, channel, method);
-				ResourceHandler handler = zinc.getHandler(hr, resource);
+				final ConcreteHandleRequest hr = new ConcreteHandleRequest(this, channel, method);
+				final ResourceHandler handler = zinc.getHandler(hr, resource);
 				if (handler == null) {
 					logger.error("Request for " + resource + " received; there is no handler for that");
 					ConcreteResponse rs = response;
@@ -156,7 +163,7 @@ public abstract class ConcreteConnection implements Connection {
 				if (json.has("subscription")) {
 					int sub = json.getInt("subscription");
 					handlePromise(sub, json);
-					MakeRequest r;
+					final MakeRequest r;
 					synchronized (this) {
 						r = mapping.get(sub);
 					}
