@@ -85,7 +85,7 @@ public class ConcreteMakeRequest implements MakeRequest {
 	@Override
 	public void send() {
 		try {
-			JSONObject msg = asJSON();
+			JSONObject msg = getPayloadAsJson();
 			logger.info("Sending message " + msg);
 			conn.send(msg);
 		} catch (Exception ex) {
@@ -109,7 +109,8 @@ public class ConcreteMakeRequest implements MakeRequest {
 		}
 	}
 
-	private JSONObject asJSON() throws JSONException {
+	@Override
+	public JSONObject getPayloadAsJson() throws JSONException {
 		JSONObject req = new JSONObject();
 		req.put("method", method);
 		if (resource != null)

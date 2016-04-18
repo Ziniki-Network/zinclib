@@ -8,4 +8,6 @@ public interface Requestor {
 
 	MakeRequest invoke(String resource, ResponseHandler handler);
 
+	Connection getConnection();
+
 }

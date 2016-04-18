@@ -27,7 +27,7 @@ import org.zincapi.jsonapi.Payload;
 import org.zinutils.exceptions.UtilException;
 
 public abstract class ConcreteConnection implements Connection {
-	private final static Logger logger = LoggerFactory.getLogger("Connection");
+	protected final static Logger logger = LoggerFactory.getLogger("Connection");
 	protected final Zinc zinc;
 	private int handle;
 	private int nextChannel = 1;
@@ -101,7 +101,7 @@ public abstract class ConcreteConnection implements Connection {
 				} else if (method.equals("heartbeat")) {
 					JSONObject hb = new JSONObject();
 					hb.put("heartbeat", "");
-					send(hb);
+					send(hb, true);
 					return;
 				}
 				String resource = null;
@@ -231,5 +231,9 @@ public abstract class ConcreteConnection implements Connection {
 		pendingPromises.put(h, promise);
 	}
 
-	public abstract void send(JSONObject asJSON);
+	public void send(JSONObject jsonObject) {
+		send(jsonObject, false);
+	}
+
+	public abstract void send(JSONObject asJSON, boolean overridePending);
 }

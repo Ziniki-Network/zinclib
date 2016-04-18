@@ -11,6 +11,12 @@ public class TestingLifecycleHandler implements LifecycleHandler {
 	@Override
 	public void onConnection(Connection conn) {
 		System.out.println("Connection completed to " + conn);
+		conn.reducePending();
+	}
+	
+	@Override
+	public void onReady(Connection conn) {
+		System.out.println("Connection ready " + conn);
 	}
 	
 	@Override

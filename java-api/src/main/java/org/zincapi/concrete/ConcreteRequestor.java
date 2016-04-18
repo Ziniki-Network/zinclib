@@ -1,5 +1,6 @@
 package org.zincapi.concrete;
 
+import org.zincapi.Connection;
 import org.zincapi.MakeRequest;
 import org.zincapi.Requestor;
 import org.zincapi.ResponseHandler;
@@ -13,6 +14,11 @@ public class ConcreteRequestor implements Requestor {
 		this.channel = channel;
 	}
 
+	@Override
+	public Connection getConnection() {
+		return conn;
+	}
+	
 	@Override
 	public MakeRequest subscribe(String resource, ResponseHandler handler) {
 		ConcreteMakeRequest ret = new ConcreteMakeRequest(conn, channel, "subscribe", handler);

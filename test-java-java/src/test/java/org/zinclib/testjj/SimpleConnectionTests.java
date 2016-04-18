@@ -13,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zincapi.Requestor;
 import org.zincapi.Zinc;
-import org.zincapi.ZincException;
 import org.zinutils.http.InlineServer;
 import org.zinutils.serialization.Endpoint;
 import org.zinutils.sync.SyncUtils;

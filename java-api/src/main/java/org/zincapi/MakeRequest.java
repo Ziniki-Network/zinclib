@@ -1,5 +1,7 @@
 package org.zincapi;
 
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 import org.zincapi.jsonapi.Payload;
 
 public interface MakeRequest {
@@ -47,4 +49,10 @@ public interface MakeRequest {
 	 * @throws JSONException
 	 */
 	void unsubscribe();
+
+	/** Obtain the JSON version of the payload to be sent
+	 * @return the JSON payload
+	 * @throws JSONException
+	 */
+	JSONObject getPayloadAsJson() throws JSONException;
 }

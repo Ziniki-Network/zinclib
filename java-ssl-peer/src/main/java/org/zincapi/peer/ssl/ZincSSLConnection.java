@@ -22,7 +22,7 @@ public class ZincSSLConnection extends ConcreteConnection implements IncomingCon
 	}
 
 	@Override
-	public void send(JSONObject jsonObject) {
+	public void send(JSONObject jsonObject, boolean overridePending) {
 		sendTextMessage(jsonObject.toString());
 	}
 
@@ -38,6 +38,12 @@ public class ZincSSLConnection extends ConcreteConnection implements IncomingCon
 	@Override
 	public void receiveTextMessage(String s) throws JSONException {
 		super.handleMessage(s);
+	}
+
+	@Override
+	public void reducePending() {
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override

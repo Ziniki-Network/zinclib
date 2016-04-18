@@ -26,9 +26,10 @@ public class ZiNCClient implements Zinc.Client {
 		client = ClientFactory.getDefault().newClient();
 	}
 	
-	public Connection createConnection(URI url, LifecycleHandler lifecycleHandler) throws IOException {
-		ClientConnection ret = new ClientConnection(zinc, client, url);
-		ret.addLifecycleHandler(lifecycleHandler);
+	public Connection createConnection(URI url, LifecycleHandler lifecycleHandler, String idType, String idAddress) throws IOException {
+		ClientConnection ret = new ClientConnection(zinc, client, url, idType, idAddress);
+		if (lifecycleHandler != null)
+			ret.addLifecycleHandler(lifecycleHandler);
 		synchronized (connections) {
 			connections.add(ret);
 			connections.notify();

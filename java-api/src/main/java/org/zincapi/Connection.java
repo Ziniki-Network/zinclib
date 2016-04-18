@@ -4,4 +4,6 @@ public interface Connection {
 	int nextHandle(MakeRequest r);
 
 	void close();
+
+	void reducePending();
 }

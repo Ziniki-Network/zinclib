@@ -52,8 +52,14 @@ public class IncomingServerConnection extends ConcreteConnection implements Inco
 	}
 
 	@Override
-	public void send(JSONObject jsonObject) {
+	public void send(JSONObject jsonObject, boolean overridePending) {
 		replyTo.sendTextMessage(jsonObject.toString());
+	}
+
+	@Override
+	public void reducePending() {
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override

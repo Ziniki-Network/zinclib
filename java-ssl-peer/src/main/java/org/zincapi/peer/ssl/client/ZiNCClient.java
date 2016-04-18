@@ -21,7 +21,7 @@ public class ZiNCClient implements Zinc.Client {
 	}
 	
 	@Override
-	public Connection createConnection(URI url, LifecycleHandler lifecycleHandler) throws IOException {
+	public Connection createConnection(URI url, LifecycleHandler lifecycleHandler, String idType, String idAddress) throws IOException {
 		String host = url.getHost();
 		int port = url.getPort();
 		Future<ZincSSLParticipant> client = zinc.createClient(new InetSocketAddress(host, port));

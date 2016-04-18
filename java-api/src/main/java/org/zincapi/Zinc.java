@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zincapi.concrete.ConcreteConnection;
 import org.zincapi.concrete.ConcreteHandleRequest;
-import org.zincapi.concrete.ConcreteMakeRequest;
 import org.zincapi.concrete.ConcreteMulticastResponse;
 import org.zincapi.concrete.SegmentHandler;
 import org.zinutils.sync.ThreadPool;
@@ -87,15 +86,13 @@ public class Zinc {
 			String url = uri.toString();
 			Connection conn;
 			if (conns.containsKey(url)) {
+				logger.error("Reusing connection to " + url);
 				conn = conns.get(url);
 				((ConcreteConnection)conn).addLifecycleHandler(lifecycleHandler);
 			} else {
-				conn = client.createConnection(uri, lifecycleHandler);
+				logger.error("Creating new connection to " + url);
+				conn = client.createConnection(uri, lifecycleHandler, idType, idAddress);
 				conns.put(url, conn);
-				ConcreteMakeRequest mr = new ConcreteMakeRequest((ConcreteConnection) conn, 0, "establish");
-				mr.setOption("type", idType);
-				mr.setOption("address", idAddress);
-				mr.send();
 			}
 			return client.requestor(conn);
 		} catch (Exception ex) {
@@ -198,7 +195,7 @@ public class Zinc {
 	}
 
 	public interface Client {
-		Connection createConnection(URI url, LifecycleHandler lifecycleHandler) throws IOException;
+		Connection createConnection(URI url, LifecycleHandler lifecycleHandler, String idType, String idAddress) throws IOException;
 		Requestor requestor(Connection conn);
 	}
 
